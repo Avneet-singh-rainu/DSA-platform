@@ -20,6 +20,8 @@ difficulty: String ,
     link:String,
     code: [String],
     exampleImages :[String],
+    testcasecode:String,
+    mainmethode:String,
   },
   {
     timestamps: true,

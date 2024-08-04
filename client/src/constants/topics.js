@@ -5,6 +5,16 @@ export const topics = [
     path: "/topics/arrays",
   },
   {
+    name: "Linked Lists",
+    desc: "Dive deep into arrays, the foundation of DSA.",
+    path: "/topics/linkedlists",
+  },
+  {
+    name: "Strings",
+    desc: "Dive deep into arrays, the foundation of DSA.",
+    path: "/topics/strings",
+  },
+  {
     name: "Trees",
     desc: "Master trees, a crucial data structure for many problems.",
     path: "/topics/trees",

@@ -1,21 +1,16 @@
 import React, { useEffect, useState, Suspense, lazy } from "react";
-import { useNavigate, useLocation, useFetcher,Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Dropper from "../components/Dropper";
 import fetchTopicsbyName from "../utils/fetchTopicsByName";
-import { deepOrange } from "@mui/material/colors";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchUser } from "../store/userSlice";
+import { fetchUser, updateBookmarks } from "../store/userSlice";
 import axios from "axios";
-import { updateBookmarks } from "../store/userSlice";
-
-//! Lazy load VideoList component
-const VideoList = lazy(() => import("../components/VideoList"));
 
 const EachTopic = () => {
   const selector = useSelector((state) => state);
-
-  const[user,setuser] = useState(selector.userSlice.data|| JSON.parse(sessionStorage.getItem("user"))||[])
-
+  const [user, setUser] = useState(
+    selector.userSlice.data || JSON.parse(sessionStorage.getItem("user")) || []
+  );
   const dispatch = useDispatch();
   const location = useLocation();
   const topicName = location.pathname.split("/").pop();
@@ -39,66 +34,41 @@ const EachTopic = () => {
 
   useEffect(() => {
     fetchDatas();
-  }, [topicName,bookmarks]);
+  }, [topicName, bookmarks]);
 
-  // const toggleBookmark = async (index) => {
-  //   const currentItem = fetchData[index];
-  //   const updatedItem = {
-  //     ...currentItem,
-  //     isBookmarked: !currentItem.isBookmarked,
-  //   };
-  //   try {
-  //     const updatedFetchData = fetchData.map((item, idx) =>
-  //       idx === index ? updatedItem : item
-  //     );
-  //     setFetchData(updatedFetchData);
-  //      await axios.post(`http://localhost:5000/api/topics/${currentItem._id}`, {
-  //        isBookmarked: updatedItem.isBookmarked,
-  //      });
-  //   } catch (error) {
-  //     console.error("Failed to update bookmark:", error);
-  //     const revertedFetchData = fetchData.map((item, idx) =>
-  //       idx === index ? currentItem : item
-  //     );
-  //     setFetchData(revertedFetchData);
-  //   }
-  // };
+  const toggleBookmark = async (index) => {
+    const isBookmarked = bookmarks.includes(index);
+    const previousBookmarks = [...bookmarks];
+    setBookmarks((prev) => {
+      if (isBookmarked) {
+        return prev.filter((id) => id !== index);
+      } else {
+        return [...prev, index];
+      }
+    });
 
-const toggleBookmark = async (index) => {
-  const isBookmarked = bookmarks.includes(index);
-  const previousBookmarks = [...bookmarks];
-  setBookmarks((prev) => {
-    if (isBookmarked) {
-      return prev.filter((id) => id !== index);
-    } else {
-      return [...prev, index];
-    }
-  });
-
-  try {
-    const response = await axios.post(
-      `http://localhost:5000/user/${user._id}/${index}`
-    );
-    let updatedUser = { ...user };
-    if (isBookmarked) {
-      updatedUser.bookmarks = updatedUser.bookmarks.filter(
-        (id) => id !== index
+    try {
+      const response = await axios.post(
+        `http://localhost:5000/user/${user._id}/${index}`
       );
-    } else {
-      updatedUser.bookmarks.push(index);
+      let updatedUser = { ...user };
+      if (isBookmarked) {
+        updatedUser.bookmarks = updatedUser.bookmarks.filter(
+          (id) => id !== index
+        );
+      } else {
+        updatedUser.bookmarks.push(index);
+      }
+      sessionStorage.setItem("user", JSON.stringify(updatedUser));
+      dispatch(updateBookmarks(updatedUser.bookmarks));
+    } catch (error) {
+      console.error("Error toggling bookmark:", error.message);
+
+      // Revert to the previous state if the API call fails
+      setBookmarks(previousBookmarks);
+      alert("Failed to update bookmarks. Please try again.");
     }
-    sessionStorage.setItem("user", JSON.stringify(updatedUser));
-    dispatch(updateBookmarks(updatedUser.bookmarks));
-  } catch (error) {
-    console.error("Error toggling bookmark:", error.message);
-
-    // Revert to the previous state if the API call fails
-    setBookmarks(previousBookmarks);
-    alert("Failed to update bookmarks. Please try again.");
-  }
-};
-
-
+  };
 
   const toggleCompletion = (index) => {
     console.log(user.completed.includes(index));
@@ -106,35 +76,44 @@ const toggleBookmark = async (index) => {
 
   const handleCodeEditor = (topic) => {
     navigate(`/topics/${topic.name}/${topic._id}`, { state: { data: topic } });
-};
+  };
 
   return (
-    <div className="w-full">
-      <div className="mx-56 min-h-screen bg-gray-900 text-gray-200 relative">
+    <div className="w-full min-h-screen bg-gray-900 text-gray-200">
+      <div className="mx-8 lg:mx-56 relative">
         <Dropper
           isDown={isDown}
           filteredData={fetchData}
           setIsDown={setIsDown}
         />
         {/* Main Content */}
-        <div className="flex-grow p-8 space-y-8 max-w-full">
+        <div className="flex-grow py-8 space-y-8 max-w-full">
           {fetchData.length > 0 ? (
             <Suspense
-              fallback={<div className="text-gray-400">Loading videos...</div>}
+              fallback={<div className="text-gray-400">Loading...</div>}
             >
               {fetchData.map((t, index) => (
                 <div
                   key={index}
-                  className="bg-gray-800 p-8 rounded-lg flex flex-col lg:flex-row gap-8 shadow-xl transform transition duration-500 hover:scale-105"
+                  className="bg-gray-800 p-6 lg:p-8 rounded-lg shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
                 >
                   {/* Question Section */}
-
-                  <div className="lg:w-2/3 w-full">
+                  <div className="w-full">
                     <div className="flex justify-between items-center mb-6">
-                      <h1 className="text-3xl font-bold">{t.title}</h1>
+                      <h1 className="text-2xl lg:text-3xl font-bold">
+                        {t.title}
+                      </h1>
                       <div className="flex space-x-4">
-                      <span className="text-sky-400"><a href={t.link} target="_blank"
-        rel="noopener noreferrer">Problem Link</a></span>
+                        <span className="text-sky-400">
+                          <a
+                            href={t.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-sky-300 transition-colors"
+                          >
+                            Problem Link
+                          </a>
+                        </span>
                         {/* Bookmark Button */}
                         <button
                           onClick={() => toggleBookmark(t._id)}
@@ -142,7 +121,7 @@ const toggleBookmark = async (index) => {
                             bookmarks.includes(t._id)
                               ? "text-yellow-400"
                               : "text-gray-400"
-                          }`}
+                          } transition-colors hover:text-yellow-300`}
                           title={
                             bookmarks.includes(t._id)
                               ? "Remove Bookmark"
@@ -189,7 +168,7 @@ const toggleBookmark = async (index) => {
                             user?.completed?.includes(t._id)
                               ? "text-green-400"
                               : "text-gray-400"
-                          }`}
+                          } transition-colors hover:text-green-300`}
                           title={
                             user?.completed?.includes(t._id)
                               ? "Mark as Not Complete"
@@ -230,7 +209,7 @@ const toggleBookmark = async (index) => {
                         </button>
                       </div>
                     </div>
-                    <p className="text-lg mb-4">{t.desc}</p>
+                    <p className="text-lg mb-4 leading-relaxed">{t.desc}</p>
                     <p className="text-sm text-gray-400 mb-4">
                       Difficulty:{" "}
                       <span
@@ -248,7 +227,10 @@ const toggleBookmark = async (index) => {
                     <div>
                       <h3 className="text-md font-bold mb-2">Examples:</h3>
                       {t.examples.map((ex, idx) => (
-                        <div key={idx} className="mb-4 text-gray-400">
+                        <div
+                          key={idx}
+                          className="mb-4 p-4 bg-gray-700 rounded-lg text-gray-300"
+                        >
                           <p>
                             <span className="font-semibold">Input:</span>{" "}
                             {ex.input}
@@ -264,24 +246,22 @@ const toggleBookmark = async (index) => {
                         </div>
                       ))}
                       <div
-                        className="cursor-pointer"
+                        className="cursor-pointer mt-2 inline-block bg-sky-600 hover:bg-sky-700 text-white py-2 px-4 rounded transition-colors"
                         onClick={() => handleCodeEditor(t)}
                       >
-                        <span className="text-sky-300 font-mono">
-                          Practise Here...
-                        </span>
+                        Code Editor
                       </div>
                     </div>
                   </div>
-
-                  {/* Video Section */}
-                  <VideoList videoUrl={t.videoUrl} />
                 </div>
               ))}
-              {loading && <div className="text-gray-400">Loading more...</div>}
             </Suspense>
+          ) : loading ? (
+            <div className="text-center text-gray-400">Loading...</div>
           ) : (
-            <p className="text-gray-400">No data available</p>
+            <div className="text-center text-red-400">
+              No topics found. Please try again later.
+            </div>
           )}
         </div>
       </div>

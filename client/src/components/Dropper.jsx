@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 const Dropper = ({ isDown, filteredData, setIsDown }) => {
   const user = useSelector((state) => state.userSlice.data);
 
-  const handleCompletion = (i) => {
+    const handleCompletion = (i) => {
     const changes = { ...questionsData[i], isCompleted: true };
   };
   return (

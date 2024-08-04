@@ -20,7 +20,7 @@ const UserDashboard = () => {
 
   // Example data
   const totalQuestions = 150;
-  const solvedQuestions = user?.completed.length;
+                const solvedQuestions = user?.completed.length;
   const avgDifficulty = "Medium";
   const recentQuestions = [
     { title: "Two Sum", difficulty: "Easy" },
