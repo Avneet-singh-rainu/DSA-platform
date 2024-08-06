@@ -1,5 +1,10 @@
 export const topics = [
   {
+    name: "Patterns",
+    desc: "Dive deep into arrays, the foundation of DSA.",
+    path: "/topics/patterns",
+  },
+  {
     name: "Arrays",
     desc: "Dive deep into arrays, the foundation of DSA.",
     path: "/topics/arrays",

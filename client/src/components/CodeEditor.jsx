@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy } from "react";
+import React, { useState, Suspense, lazy, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import { useDispatch, useSelector } from "react-redux";
 import { executeCode } from "../store/codeExecutionSlice";
@@ -23,18 +23,18 @@ const VideoList = lazy(() => import("./VideoList"));
 const theme = createTheme({
     palette: {
         primary: {
-            main: "#4CAF50", // Green for primary
+            main: "#4CAF50",
         },
         secondary: {
-            main: "#FFC107", // Amber for secondary
+            main: "#FFC107",
         },
         background: {
-            default: "#0B192F", // Dark blue background
-            paper: "#1E2A38", // Slightly lighter background for paper
+            default: "#0B192F",
+            paper: "#1E2A38",
         },
         text: {
-            primary: "#FFFFFF", // White text for primary
-            secondary: "#B0BEC5", // Light gray text for secondary
+            primary: "#FFFFFF",
+            secondary: "#B0BEC5",
         },
     },
     typography: {
@@ -65,6 +65,18 @@ function CodeEditor() {
     const [showEditor, setShowEditor] = useState(false);
     const [showVideo, setShowVideo] = useState(false);
     const dispatch = useDispatch();
+    const [filteredCode, setFilteredCode] = useState();
+
+    const newCode = () => {
+        const idx = code.indexOf("class Solution");
+        setFilteredCode(() => {
+            return code.substring(idx, code.indexOf("}"));
+        });
+    };
+
+    useEffect(() => {
+        newCode();
+    }, []);
 
     const runCode = async () => {
         try {
@@ -81,7 +93,7 @@ function CodeEditor() {
     return (
         <ThemeProvider theme={theme}>
             <Container className="flex flex-col gap-7 py-8">
-                <Box className="flex items-center justify-between mb-6">
+                <Box className="md:flex items-center justify-between mb-6">
                     <Typography
                         variant="h4"
                         component="h1"
@@ -200,7 +212,7 @@ function CodeEditor() {
                                     }}
                                 >
                                     <Editor
-                                        height="calc(70vh - 80px)" // Adjust height to account for output box
+                                        height="calc(70vh - 80px)"
                                         defaultLanguage="java"
                                         theme="vs-dark"
                                         value={code}

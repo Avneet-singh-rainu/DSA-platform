@@ -34,9 +34,9 @@ const DashBoard = () => {
   };
 
   return (
-    <div className="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center px-4 py-8">
-      <div className="max-w-2xl w-full p-8 bg-gray-800 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold mb-6 text-center text-white">
+    <div className="bg-gray-900 text-gray-200 min-h-screen flex flex-col md:flex-row items-center justify-center px-4 py-8">
+      <div className=" max-w-2xl w-full p-8 bg-gray-800 rounded-lg shadow-lg">
+        <h1 className=" text-3xl font-bold mb-6 text-center text-white">
           Profile
         </h1>
         <div className="flex flex-col items-center mb-8">
@@ -123,7 +123,6 @@ const DashBoard = () => {
               value={userData.bio}
               onChange={handleChange}
               readOnly={!isEditing}
-              rows="3"
               className={`w-full p-3 rounded-lg bg-gray-700 border-none focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 isEditing ? "focus:ring-2" : "bg-gray-600 cursor-not-allowed"
               }`}
