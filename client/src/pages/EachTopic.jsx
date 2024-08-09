@@ -19,7 +19,8 @@ const EachTopic = () => {
     const [loading, setLoading] = useState(false);
     const [bookmarks, setBookmarks] = useState([]);
     const [completed, setCompleted] = useState([]);
-    console.log(completed)
+
+    console.log(fetchData);
 
     const fetchDatas = async () => {
         setLoading(true);
@@ -38,12 +39,24 @@ const EachTopic = () => {
         const f = async () => {
             const id = JSON.parse(sessionStorage.getItem("user"))._id;
             const resp = await fetchUserByid(id);
+
             setUser(resp);
             setBookmarks(resp.bookmarks);
-            setCompleted(resp.completed);
+            setCompleted((prev) => {
+                const temp = resp.completed.map((e) => {
+                    return e.questionId;
+                });
+
+                return temp;
+            });
         };
         f();
     }, [topicName]);
+
+
+    useEffect(()=>{
+        fetchDatas();
+    },[bookmarks,completed])
 
     const toggleBookmark = async (index) => {
         const isBookmarked = bookmarks.includes(index);
@@ -72,7 +85,6 @@ const EachTopic = () => {
             dispatch(updateBookmarks(updatedUser.bookmarks));
         } catch (error) {
             console.error("Error toggling bookmark:", error.message);
-
             // Revert to the previous state if the API call fails
             setBookmarks(previousBookmarks);
             alert("Failed to update bookmarks. Please try again.");
@@ -82,6 +94,7 @@ const EachTopic = () => {
     const toggleCompletion = async (index) => {
         const isCompleted = completed.includes(index);
         const prevCompleted = [...completed];
+        console.log(prevCompleted);
         setCompleted((prev) => {
             if (isCompleted) {
                 return prev.filter((id) => id != index);

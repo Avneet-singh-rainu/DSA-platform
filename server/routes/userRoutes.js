@@ -7,7 +7,6 @@ router.get("/:name", async (req, res) => {
     try {
         const user = await User.find({ name: req.params.name });
         if (!user) return res.status(404).json({ message: "no user found" });
-        console.log(user);
         return res.status(200).json(user);
     } catch (error) {
         console.log(error.message);
@@ -17,10 +16,8 @@ router.get("/:name", async (req, res) => {
 //todo find user by id for now
 router.get("/id/:id", async (req, res) => {
     try {
-        console.log(req.params.id);
         const user = await User.find({ _id: req.params.id });
         if (!user) return res.status(404).json({ message: "no user found" });
-        console.log(user);
         return res.status(200).json(user);
     } catch (error) {
         console.log(error.message);
@@ -72,31 +69,46 @@ router.post("/:userId/:bookmark", async (req, res) => {
 router.put("/:userId/complete/:complete", async (req, res) => {
     try {
         const { userId, complete } = req.params;
-        console.log(userId, complete);
-        const user = await User.findOne({ _id: userId });
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        if (user.completed.includes(complete)) {
-            await User.updateOne(
-                { _id: userId },
-                { $pull: { completed: complete } }
-            );
-            return res.status(200).json({ message: "Completed" });
-        } else {
-            await User.updateOne(
-                { _id: userId },
+        // Check if the question is already in the user's completed array
+        const questionExists = user.completed.some(
+            (item) => item.questionId === complete
+        );
 
-                { $push: { completed: complete } }
+        if (questionExists) {
+            // If the question exists, pull it from the completed array
+            await User.updateOne(
+                { _id: userId },
+                { $pull: { completed: { questionId: complete } } }
             );
-            return res.status(200).json({ message: "Not completed" });
+            return res
+                .status(200)
+                .json({ message: "Question removed from completed list" });
+        } else {
+            // If the question doesn't exist, push it to the completed array
+            await User.updateOne(
+                { _id: userId },
+                {
+                    $push: {
+                        completed: {
+                            questionId: complete,
+                            completedAt: new Date(),
+                        },
+                    },
+                }
+            );
+            return res
+                .status(200)
+                .json({ message: "Question added to completed list" });
         }
     } catch (error) {
         console.error(error.message);
-        res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({ message: "Internal server error" });
     }
 });
-
 
 //TODO last month questions solved data
 router.get("/:userId/topics-solved-this-month", async (req, res) => {
@@ -113,19 +125,14 @@ router.get("/:userId/topics-solved-this-month", async (req, res) => {
         const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
         // Filter completed topics to only include those completed in the current month
         const topicsSolvedThisMonth = user.completed.filter(
-            (t) =>
-                t.completionDate >= startOfMonth &&
-            t.completionDate < endOfMonth
+            (t) => t.completedAt >= startOfMonth && t.completedAt < endOfMonth
         );
-
-        console.log(topicsSolvedThisMonth);
         // Count topics solved per day in the current month
         const solvedPerDay = Array(31).fill(0);
         topicsSolvedThisMonth.forEach((t) => {
-            const day = t.completionDate.getDate() - 1; // Days start at 0
+            const day = t.completedAt.getDate() - 1; // Days start at 0
             solvedPerDay[day]++;
         });
-
         res.json({ solvedPerDay });
     } catch (error) {
         res.status(500).json({ message: "Server error", error });

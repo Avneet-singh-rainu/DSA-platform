@@ -15,7 +15,7 @@ import Login from "./pages/Login";
 
 const App = () => {
     return (
-        <div className="bg-gray-900 text-gray-200 min-h-screen min-w-full">
+        <div className="bg-gray-900 text-gray-200 min-h-screen min-w-full relative">
             <Navbar />
             <div className="container min-w-full p-4">
                 <Suspense fallback={<div>...loading your content</div>}>

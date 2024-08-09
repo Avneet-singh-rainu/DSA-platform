@@ -1,10 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { topics } from "../constants/topics";
 import { motion } from "framer-motion";
 
 // Home Component
 const Home = () => {
+    const [user, setUser] = useState(() => {
+        if(sessionStorage.getItem("user")){
+            return sessionStorage.getItem("user");
+        }
+        else{
+            return " ";
+        }
+    });
+
+    useEffect(() => {
+        const handleStorageChange = () => {
+            setUser(sessionStorage.getItem("user"));
+        };
+        window.addEventListener("storage", handleStorageChange);
+        return () => {
+            window.removeEventListener("storage", handleStorageChange);
+        };
+    }, []);
+
     // Variants for animations
     const containerVariants = {
         hidden: { opacity: 0, x: "-100vw" },

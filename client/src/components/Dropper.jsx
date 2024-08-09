@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { questionsData } from "../constants/questionsData";
 import { useSelector } from "react-redux";
 
 const Dropper = ({ isDown, filteredData, setIsDown }) => {
     const state = useSelector((state) => state.userSlice.data);
     const [user, setUser] = useState(state || null);
+
     const handleCompletion = (i) => {
         const changes = { ...questionsData[i], isCompleted: true };
     };
 
     useEffect(() => {
         setUser(state);
-    }, [state]);
+    }, [state,user]);
     return (
         <div className="p-4 relative w-full">
             <span
@@ -58,7 +58,7 @@ const Dropper = ({ isDown, filteredData, setIsDown }) => {
 
                             <div className="flex flex-col md:flex-row md:gap-2">
                                 {v.tags.map((tags, i) => (
-                                    <h4 className="text-xs md:text-xl">
+                                    <h4 key={i} className="text-xs md:text-xl">
                                         {tags},
                                     </h4>
                                 ))}
@@ -84,12 +84,16 @@ const Dropper = ({ isDown, filteredData, setIsDown }) => {
                                         handleCompletion(k);
                                     }}
                                     className={`${
-                                        user?.completed?.includes(v._id)
+                                        user?.completed?.some(
+                                            (item) => item.questionId == v._id
+                                        )
                                             ? "text-green-400"
                                             : "text-red-500"
                                     } cursor-pointer text-xs md:text-xl`}
                                 >
-                                    {user?.completed?.includes(v._id)
+                                    {user?.completed?.some(
+                                        (item) => item.questionId == v._id
+                                    )
                                         ? "Completed"
                                         : "Not Completed"}
                                 </span>

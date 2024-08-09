@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logOut } from "../store/userSlice";
+import { motion } from "framer-motion";
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -23,38 +24,51 @@ const Navbar = () => {
         navigate("/");
     };
 
-    
-
     return (
-        <nav className="w-full  md:relative bg-gray-800 p-4 ">
-            <div className="relative container mx-auto flex justify-between items-center">
+        <motion.nav
+            initial={{ opacity: 0, x: "-100vw" }}
+            animate={{
+                opacity: 1,
+                x: 0,
+                transitionDuration: 0.5,
+                transitionBehavior: "revert-layer",
+            }}
+            className={`md:w-full md:relative md:bg-gray-80 p-4 z-20  ${
+                isOpen ? "bg-gray-900" : ""
+            }`}
+        >
+            <div className=" md:relative container mx-auto flex justify-between items-center">
                 <div className="text-teal-200 text-lg font-bold">
                     <Link
                         to="/"
-                        className="flex gap-4 justify-center items-center relative"
+                        className="flex gap-4 justify-center items-center"
                     >
                         <div
                             className={`w-8 h-8 rounded-2xl overflow-hidden ${
                                 isOpen ? "absolute" : ""
-                            } -top-20 left-0 `}
+                            } top-4 left-4 `}
                         >
                             <img src="/public/eatcode.jpeg" alt="icon" />
                         </div>
                         <h1
                             className={`${
                                 isOpen ? "absolute" : ""
-                            } -top-20 left-12 `}
+                            } top-4 left-16 `}
                         >
                             EatCode
                         </h1>
                     </Link>
                 </div>
                 <div
-                    className={`md:flex ${
-                        isOpen ? "block " : "hidden"
+                    className={` md:flex ${
+                        isOpen ? "block" : "hidden"
                     } w-full md:w-auto`}
                 >
-                    <ul className="flex flex-col md:flex-row items-center">
+                    <ul
+                        className={`flex flex-col md:flex-row items-center ${
+                            isOpen ? "flex gap-6 " : ""
+                        }`}
+                    >
                         <li className="mt-2 md:mt-0 md:ml-6">
                             <Link
                                 to="/"
@@ -105,8 +119,8 @@ const Navbar = () => {
                 <div className={`md:hidden relative`}>
                     <button
                         onClick={toggleNavbar}
-                        className={`text-teal-200 -top-20 right-0 focus:outline-none ${
-                            isOpen ? "absolute" : " "
+                        className={`text-teal-200 top-0 right-0 focus:outline-none ${
+                            isOpen ? "absolute -top-36" : " "
                         }`}
                     >
                         <svg
@@ -126,7 +140,7 @@ const Navbar = () => {
                     </button>
                 </div>
             </div>
-        </nav>
+        </motion.nav>
     );
 };
 
