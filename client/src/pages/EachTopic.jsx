@@ -20,8 +20,6 @@ const EachTopic = () => {
     const [bookmarks, setBookmarks] = useState([]);
     const [completed, setCompleted] = useState([]);
 
-    console.log(fetchData);
-
     const fetchDatas = async () => {
         setLoading(true);
         try {

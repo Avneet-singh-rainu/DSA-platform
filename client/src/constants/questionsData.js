@@ -164,7 +164,7 @@ export const questionsData = [
     ],
     videoUrl: "https://www.youtube.com/watch?v=rc2QdQ7U78I",
     isBookmarked: false,
-    isCompleted: false,
+isCompleted: false,
     tags: ["Two pointer", "Greedy", "HashMap"],
   },
   {
@@ -184,7 +184,7 @@ export const questionsData = [
         output: "-1",
         explanation: "The target 3 is not in the array.",
       },
-    ],
+],
     videoUrl: "https://www.youtube.com/watch?v=QdVrY3stDD4",
     isBookmarked: false,
     isCompleted: false,

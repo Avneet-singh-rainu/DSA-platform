@@ -3,8 +3,8 @@ import { questionsData } from "../constants/questionsData";
 import { useSelector } from "react-redux";
 
 const Dropper = ({ isDown, filteredData, setIsDown }) => {
-    const state = useSelector((state) => state.userSlice.data);
-    const [user, setUser] = useState(state || null);
+    const state = useSelector((state) => state?.userSlice?.data);
+    const [user, setUser] = useState(state||null);
 
     const handleCompletion = (i) => {
         const changes = { ...questionsData[i], isCompleted: true };
@@ -12,7 +12,8 @@ const Dropper = ({ isDown, filteredData, setIsDown }) => {
 
     useEffect(() => {
         setUser(state);
-    }, [state,user]);
+    }, [user]);
+
     return (
         <div className="p-4 relative w-full">
             <span
