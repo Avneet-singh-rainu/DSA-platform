@@ -51,10 +51,9 @@ const EachTopic = () => {
         f();
     }, [topicName]);
 
-
-    useEffect(()=>{
+    useEffect(() => {
         fetchDatas();
-    },[bookmarks,completed])
+    }, [bookmarks, completed]);
 
     const toggleBookmark = async (index) => {
         const isBookmarked = bookmarks.includes(index);

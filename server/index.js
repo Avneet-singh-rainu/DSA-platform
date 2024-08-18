@@ -15,7 +15,7 @@ app.use("/uploads", express.static("uploads"));
 // Database Connection
 const connectDB = async () => {
     try {
-        mongoose.connect("mongodb://127.0.0.1:27017/eatcode").then(() => {
+        mongoose.connect(process.env.MONGO_URL).then(() => {
             console.log("Connected to MongoDB");
         });
     } catch (error) {
@@ -26,7 +26,8 @@ const connectDB = async () => {
 connectDB();
 
 // Routes
-app.use("/api/topics", topicRoutes);``
+app.use("/api/topics", topicRoutes);
+``;
 app.use("/user", userRoutes);
 
 const PORT = process.env.PORT || 5000;

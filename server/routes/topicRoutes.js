@@ -61,7 +61,7 @@ router.get("/:name", async (req, res) => {
         try {
             const dataByName = await Topic.find({ name: req.params.name });
             //await redis.set(req.params.name, JSON.stringify(dataByName));
-            console.log("this data is not cached");
+            //console.log("this data is not cached");
             res.status(201).json(dataByName);
         } catch (error) {
             console.log("error in findByName " + error);

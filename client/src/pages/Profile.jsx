@@ -6,12 +6,12 @@ const DashBoard = () => {
   const user = JSON.parse(sessionStorage.getItem("user")) || null;
 
   const [userData, setUserData] = useState({
-    name: user?.name || "John Doe",
-    email: user?.email || "john.doe@example.com",
+    name: user?.name || " ",
+    email: user?.email || " ",
     bio:
       user?.bio ||
-      "I am a software developer with a passion for creating innovative solutions.",
-    location: user?.location || "New York, USA",
+      " ",
+    location: user?.location || " ",
     profilePicture:
       user?.profilePicture ||
       "https://tse3.mm.bing.net/th?id=OIP.hXZi-2Lc_OPdbDXIR_MSNQHaHa&pid=Api&P=0&h=220",

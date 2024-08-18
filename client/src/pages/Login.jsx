@@ -1,6 +1,6 @@
 //!---------LOGIN>JSX---------------------------------------------------------------------------------
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUser } from "../store/userSlice";
@@ -22,6 +22,10 @@ const Login = () => {
             setError("Invalid email or password.");
         }
     };
+
+    useEffect(()=>{
+        window.scrollTo(0, 100);
+    },[]);
 
     return (
         <div className="w-full min-h-screen flex items-center justify-center bg-gray-900 text-gray-200">
