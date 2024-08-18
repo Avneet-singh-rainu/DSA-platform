@@ -48,7 +48,7 @@ const Navbar = () => {
                                 isOpen ? "absolute" : ""
                             } top-4 left-4 `}
                         >
-                            <img src="/public/eatcode.jpeg" alt="eatcode" />
+                            <img src="/eatcode.jpeg" alt="eatcode" />
                         </div>
                         <h1
                             className={`${
