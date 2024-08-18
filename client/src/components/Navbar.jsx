@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logOut } from "../store/userSlice";
 import { motion } from "framer-motion";
+import ClearIcon from "@mui/icons-material/Clear";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -116,27 +118,14 @@ const Navbar = () => {
                         </li>
                     </ul>
                 </div>
-                <div className={`md:hidden relative`}>
+                <div className={`md:hidden relative top-0`}>
                     <button
                         onClick={toggleNavbar}
                         className={`text-teal-200 top-0 right-0 focus:outline-none ${
-                            isOpen ? "absolute -top-36" : " "
+                            isOpen ? "absolute top-[-143px]" : " "
                         }`}
                     >
-                        <svg
-                            className="w-6 h-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M4 6h16M4 12h16m-7 6h7"
-                            ></path>
-                        </svg>
+                        {isOpen ? <ClearIcon /> : <MoreVertIcon />}
                     </button>
                 </div>
             </div>

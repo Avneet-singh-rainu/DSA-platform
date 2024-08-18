@@ -29,7 +29,7 @@ const App = () => {
             <Navbar />
             {news ? (
                 <div className="bg-gray-800 text-yellow-400 p-4 rounded-lg text-center mx-auto w-4/5 shadow-lg font-semibold text-lg animate-fadeIn mt-44">
-                    <p>This website's backend is ready and will be deployed very soon.</p> <br />
+                    <p>This website's server is ready and will be deployed very soon.</p> <br />
                     <p>This website may contains some bugs for now.</p>
                 </div>
             ) : (
