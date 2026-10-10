@@ -6,7 +6,7 @@ import { topics } from "../constants/topics";
 const Home = () => {
   return (
     <div className="w-full">
-      <div className="sm:mx-56 sm:w-3/4 bg-gray-900 text-gray-200 min-h-screen relative">
+      <div className="w-full bg-gray-900 text-gray-200 min-h-screen relative px-4">
         {/* Hero Section */}
         <section className="bg-gray-800 py-20 rounded-xl">
           <div className="container mx-auto px-4 text-center">
