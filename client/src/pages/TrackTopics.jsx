@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { API_BASE } from "../utils/apiBase";
 import { topicSlug, trackSlug } from "../utils/slug";
+import TrackDocs from "../components/TrackDocs";
 
 // /topics/:track -> topics inside one track (DSA, AI, ...)
 // Each topic expands in place to reveal its articles/problems.
@@ -43,10 +44,17 @@ const TrackTopics = () => {
   }, [topics, query]);
 
   const basePath = `/topics/${trackSlug(track)}`;
+  const allArticles =
+    topics.length > 0 &&
+    topics.every((t) => (t.kind || "problem") === "article");
 
   return (
     <div className="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 min-h-screen py-8">
-      <div className="container mx-auto px-4 max-w-3xl">
+      <div
+        className={`container mx-auto px-4 ${
+          allArticles ? "" : "max-w-3xl"
+        }`}
+      >
         <Link
           to="/topics"
           className="text-emerald-700 dark:text-emerald-400 hover:underline text-sm"
@@ -57,17 +65,28 @@ const TrackTopics = () => {
           {track}
         </h1>
         <p className="text-slate-500 dark:text-slate-400 text-center mb-6">
-          {topics.length} problem{topics.length !== 1 ? "s" : ""} across{" "}
-          {groups.length} topic{groups.length !== 1 ? "s" : ""}
+          {allArticles ? (
+            <>
+              {groups.length} topic{groups.length !== 1 ? "s" : ""} ·{" "}
+              {topics.length} guide{topics.length !== 1 ? "s" : ""}
+            </>
+          ) : (
+            <>
+              {topics.length} problem{topics.length !== 1 ? "s" : ""} across{" "}
+              {groups.length} topic{groups.length !== 1 ? "s" : ""}
+            </>
+          )}
         </p>
-        <div className="max-w-md mx-auto mb-6">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search topics..."
-            className="w-full px-4 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-        </div>
+        {!allArticles && (
+          <div className="max-w-md mx-auto mb-6">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search topics..."
+              className="w-full px-4 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+        )}
 
         {loading ? (
           <p className="text-center text-slate-500 dark:text-slate-400">
@@ -77,6 +96,8 @@ const TrackTopics = () => {
           <p className="text-center text-slate-500 dark:text-slate-400 py-6">
             No topics yet — check back soon.
           </p>
+        ) : allArticles ? (
+          <TrackDocs groups={groups} />
         ) : (
           <div className="divide-y divide-slate-200 dark:divide-slate-800 border-y border-slate-200 dark:border-slate-800">
             {groups.map((g) => (

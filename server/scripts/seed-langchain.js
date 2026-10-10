@@ -215,7 +215,7 @@ async function main() {
     desc: "What LangChain is, its six key components, and how the model interface unifies providers.",
     content: introContent,
     tags: ["LangChain", "LLM", "Agents", "RAG"],
-    exampleImages: [],
+    exampleImages: ["/diagrams/langchain-models-types.png"],
   });
   await upsertArticle({
     track: "LangChain",
