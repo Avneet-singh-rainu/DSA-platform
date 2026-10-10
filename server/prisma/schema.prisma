@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Topic {
+  id             String   @id @default(cuid())
+  name           String?
+  title          String?
+  desc           String?
+  difficulty     String?
+  videoUrl       String?
+  link           String?
+  tags           String[] @default([])
+  code           String[] @default([])
+  exampleImages  String[] @default([])
+  examples       Json?
+  testcasecode   String?
+  mainmethode    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([name])
+}
+
+model User {
+  id        String      @id @default(cuid())
+  name      String      @unique
+  bookmarks String[]    @default([])
+  completed Completed[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Completed {
+  id          String   @id @default(cuid())
+  userId      String
+  questionId  String
+  completedAt DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questionId])
+  @@index([userId])
+}

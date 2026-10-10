@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import axios from "axios";
+import { API_BASE } from "../utils/apiBase";
 //import { signupUser } from "../store/userSlice"; // Replace with your signup action
 
 const Signup = () => {
@@ -15,7 +16,7 @@ const Signup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`http://localhost:5000/user`, { name: email });
+            await axios.post(`${API_BASE}/user`, { name: email });
             navigate("/login"); // Redirect to login page after successful signup
         } catch (err) {
             setError("Failed to sign up. Please try again.");

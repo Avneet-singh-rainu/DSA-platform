@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchUser, updateBookmarks } from "../store/userSlice";
 import fetchUserByid from "../utils/fetchUserById";
 import axios from "axios";
+import { API_BASE } from "../utils/apiBase";
 
 const EachTopic = () => {
     //const selector = useSelector((state) => state);
@@ -68,7 +69,7 @@ const EachTopic = () => {
 
         try {
             const response = await axios.post(
-                `http://localhost:5000/user/${user._id}/${index}`
+                `${API_BASE}/user/${user._id}/${index}`
             );
             let updatedUser = { ...user };
             if (isBookmarked) {
@@ -103,7 +104,7 @@ const EachTopic = () => {
         //api call to toggle completion
         try {
             const resp = await axios.put(
-                `http://localhost:5000/user/${user._id}/complete/${index}`
+                `${API_BASE}/user/${user._id}/complete/${index}`
             );
             const resp2 = await fetchUserByid(user._id);
             setUser(resp2);

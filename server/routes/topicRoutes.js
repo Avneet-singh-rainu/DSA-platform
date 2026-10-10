@@ -1,93 +1,85 @@
 const express = require("express");
 const router = express.Router();
-const Topic = require("../models/topicModel");
-const Redis = require("ioredis");
-//const redis = new Redis();
+const prisma = require("../utils/prisma");
+const { withId } = require("../utils/serialize");
 
-// redis.on("connection", () => {
-//   console.log("connected to redis");
-// });
-// redis.on("error", () => {
-//   console.log("error connecting to redis");
-// });
-
+// GET /api/topics -> all topics
 router.get("/", async (req, res) => {
-    try {
-        const topics = await Topic.find();
-        res.json(topics);
-    } catch (error) {
-        console.error("Error fetching topics:", error);
-        res.status(500).json({ message: "Error fetching topics" });
-    }
-});
-
-async () => {
-    await redis().then(() => {
-        console.log("redis connected");
+  try {
+    const topics = await prisma.topic.findMany({
+      orderBy: { createdAt: "asc" },
     });
-};
+    res.json(withId(topics));
+  } catch (error) {
+    console.error("Error fetching topics:", error);
+    res.status(500).json({ message: "Error fetching topics" });
+  }
+});
 
-//!---------------------------------------------- Create a new topic
-
+// POST /api/topics -> single or bulk create
 router.post("/", async (req, res) => {
-    try {
-        const newTopicsData = req.body;
+  try {
+    const newTopicsData = req.body;
 
-        if (Array.isArray(newTopicsData)) {
-            // Insert multiple topics using insertMany
-            const savedTopics = await Topic.insertMany(newTopicsData);
-            return res.status(201).json(savedTopics);
-        } else {
-            // Insert a single topic
-            const newTopic = new Topic(newTopicsData);
-            await newTopic.save(); // Save the single document
-            return res.status(201).json(newTopic); // Return the saved single topic
-        }
-    } catch (error) {
-        console.error("Error inserting topics:", error);
-        res.status(500).json({ message: "Error inserting topics" });
-    }
-});
-
-//!-------------------------------------------------find by names or category
-
-router.get("/:name", async (req, res) => {
-    const cacheData = /*await redis.get(req.params.name)||*/ null;
-
-    if (cacheData) {
-        // console.log("this data is cached");
-        // return res.status(201).json(JSON.parse(cacheData));
+    if (Array.isArray(newTopicsData)) {
+      const result = await prisma.topic.createMany({
+        data: newTopicsData,
+        skipDuplicates: true,
+      });
+      // createMany returns count only, fetch back for compat
+      const saved = await prisma.topic.findMany({
+        orderBy: { createdAt: "desc" },
+        take: result.count,
+      });
+      return res.status(201).json(withId(saved));
     } else {
-        try {
-            const dataByName = await Topic.find({ name: req.params.name });
-            //await redis.set(req.params.name, JSON.stringify(dataByName));
-            //console.log("this data is not cached");
-            res.status(201).json(dataByName);
-        } catch (error) {
-            console.log("error in findByName " + error);
-            res.json({ message: "Error", error: error });
-        }
+      const newTopic = await prisma.topic.create({
+        data: newTopicsData,
+      });
+      return res.status(201).json(withId(newTopic));
     }
+  } catch (error) {
+    console.error("Error inserting topics:", error);
+    res.status(500).json({ message: "Error inserting topics" });
+  }
 });
 
-//!-------------------------------------------------------update by id
-router.post("/:id", async (req, res) => {
-    try {
-        const updatedData = await Topic.findByIdAndUpdate(
-            { _id: req.params.id },
-            { isBookmarked: req.body.isBookmarked }
-        );
+// GET /api/topics/:name -> find by category/name (case-insensitive, plural-tolerant)
+// /topics/arrays -> matches DB name "Array", /topics/strings -> "String"
+router.get("/:name", async (req, res) => {
+  try {
+    const raw = decodeURIComponent(req.params.name).trim();
+    const singular = raw.toLowerCase().endsWith("s") ? raw.slice(0, -1) : raw;
 
-        if (updatedData) {
-            return res.status(201).json(updatedData);
-        } else {
-            return res
-                .status(401)
-                .json({ message: "error while updating data" });
-        }
-    } catch (error) {
-        res.status(500).json({ message: "Error", error: error });
+    const dataByName = await prisma.topic.findMany({
+      where: {
+        OR: [
+          { name: { equals: raw, mode: "insensitive" } },
+          { name: { equals: singular, mode: "insensitive" } },
+        ],
+      },
+    });
+    res.status(200).json(withId(dataByName));
+  } catch (error) {
+    console.log("error in findByName " + error);
+    res.json({ message: "Error", error: String(error) });
+  }
+});
+
+// POST /api/topics/:id (legacy: update isBookmarked, field doesn't exist in schema)
+// Kept for backwards compat — just returns the topic.
+router.post("/:id", async (req, res) => {
+  try {
+    const topic = await prisma.topic.findUnique({
+      where: { id: req.params.id },
+    });
+    if (topic) {
+      return res.status(200).json(withId(topic));
     }
+    return res.status(404).json({ message: "topic not found" });
+  } catch (error) {
+    res.status(500).json({ message: "Error", error: String(error) });
+  }
 });
 
 module.exports = router;

@@ -45,40 +45,7 @@ const About = () => {
             our vision to life. We are a diverse group of professionals with a
             shared commitment to excellence.
           </p>
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Team Member 1 */}
-            <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-              <img
-                src="https://via.placeholder.com/150"
-                alt="Team Member"
-                className="w-32 h-32 rounded-full mx-auto mb-4"
-              />
-              <h4 className="text-xl font-semibold text-white">John Doe</h4>
-              <p className="text-gray-400">CEO & Founder</p>
-            </div>
-            {/* Team Member 2 */}
-            <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-              <img
-                src="https://via.placeholder.com/150"
-                alt="Team Member"
-                className="w-32 h-32 rounded-full mx-auto mb-4"
-              />
-              <h4 className="text-xl font-semibold text-white">Jane Smith</h4>
-              <p className="text-gray-400">Lead Developer</p>
-            </div>
-            {/* Team Member 3 */}
-            <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-              <img
-                src="https://via.placeholder.com/150"
-                alt="Team Member"
-                className="w-32 h-32 rounded-full mx-auto mb-4"
-              />
-              <h4 className="text-xl font-semibold text-white">
-                Emily Johnson
-              </h4>
-              <p className="text-gray-400">Project Manager</p>
-            </div>
-          </div>
+          
         </div>
       </div>
     </div>
