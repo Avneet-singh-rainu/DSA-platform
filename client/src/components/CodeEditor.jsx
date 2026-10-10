@@ -184,11 +184,12 @@ function CodeEditor() {
   };
 
   const listPath = useMemo(() => {
+    const from = location.state?.from || "";
     const t = params.track || data?.track;
-    if (t) return `/topics/${t.toLowerCase()}`;
+    if (t) return `/topics/${t.toLowerCase()}${from}`;
     // legacy /topics/:topicname/:question URLs
     return "/topics";
-  }, [params.track, data?.track]);
+  }, [params.track, data?.track, location.state?.from]);
 
   // Articles (e.g. LangChain track) render as reading pages, not editors
   if (!loadingProblem && data && (data.kind || "problem") === "article") {

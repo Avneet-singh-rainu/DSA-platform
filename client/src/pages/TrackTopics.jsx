@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { API_BASE } from "../utils/apiBase";
 import { topicSlug, trackSlug } from "../utils/slug";
@@ -28,9 +28,11 @@ function difficultyColor(d) {
 const TrackTopics = () => {
   const { track } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(searchParams.get("q") || "");
 
   useEffect(() => {
     const load = async () => {
@@ -62,9 +64,15 @@ const TrackTopics = () => {
   }, [topics]);
 
   const topicNames = useMemo(() => groups.map((g) => g.name), [groups]);
-  const [topicFilter, setTopicFilter] = useState("All");
-  const [levelFilter, setLevelFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [topicFilter, setTopicFilter] = useState(
+    searchParams.get("topic") || "All"
+  );
+  const [levelFilter, setLevelFilter] = useState(
+    searchParams.get("level") || "All"
+  );
+  const [statusFilter, setStatusFilter] = useState(
+    searchParams.get("status") || "All"
+  );
   const [bookmarks, setBookmarks] = useState([]);
   const [completedIds, setCompletedIds] = useState(new Set());
 
@@ -110,6 +118,32 @@ const TrackTopics = () => {
     });
   }, [topics, query, topicFilter, levelFilter, statusFilter, completedIds, bookmarks]);
 
+  const PAGE_SIZE = 15;
+  const [page, setPage] = useState(() => {
+    const p = parseInt(searchParams.get("page") || "1", 10);
+    return Number.isFinite(p) && p > 0 ? p : 1;
+  });
+  const totalPages = Math.max(1, Math.ceil(flat.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = flat.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  // Keep filters + page in the URL so back-navigation restores the list
+  useEffect(() => {
+    const next = {};
+    if (query) next.q = query;
+    if (topicFilter !== "All") next.topic = topicFilter;
+    if (levelFilter !== "All") next.level = levelFilter;
+    if (statusFilter !== "All") next.status = statusFilter;
+    if (safePage > 1) next.page = String(safePage);
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, topicFilter, levelFilter, statusFilter, safePage]);
+
+  const resetPage = (setter) => (e) => {
+    setter(e.target.value);
+    setPage(1);
+  };
+
   const basePath = `/topics/${trackSlug(track)}`;
   const allArticles =
     topics.length > 0 &&
@@ -118,7 +152,7 @@ const TrackTopics = () => {
   const openItem = (groupName, item) => {
     const id = item._id || item.id;
     navigate(`${basePath}/${topicSlug(groupName)}/${id}`, {
-      state: { data: item },
+      state: { data: item, from: location.search },
     });
   };
 
@@ -151,13 +185,16 @@ const TrackTopics = () => {
           <div className="flex flex-col md:flex-row gap-2 mb-4">
             <input
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
               placeholder="Search problems..."
               className="flex-1 px-4 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
             <select
               value={topicFilter}
-              onChange={(e) => setTopicFilter(e.target.value)}
+              onChange={resetPage(setTopicFilter)}
               className="px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sm"
             >
               <option value="All">All topics</option>
@@ -169,7 +206,7 @@ const TrackTopics = () => {
             </select>
             <select
               value={levelFilter}
-              onChange={(e) => setLevelFilter(e.target.value)}
+              onChange={resetPage(setLevelFilter)}
               className="px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sm"
             >
               <option value="All">All levels</option>
@@ -179,7 +216,7 @@ const TrackTopics = () => {
             </select>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={resetPage(setStatusFilter)}
               className="px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sm"
             >
               <option value="All">All status</option>
@@ -207,10 +244,11 @@ const TrackTopics = () => {
         ) : (
           <>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-              Showing {flat.length} of {topics.length} problems
+              Showing {flat.length} of {topics.length} problems · page{" "}
+              {safePage}/{totalPages}
             </p>
             <div className="divide-y divide-slate-200 dark:divide-slate-800 border-y border-slate-200 dark:border-slate-800">
-              {flat.map((item, i) => {
+              {pageItems.map((item, i) => {
                 const id = item._id || item.id;
                 const gName = (item.name || "Misc").trim();
                 const done = completedIds.has(id);
@@ -230,7 +268,7 @@ const TrackTopics = () => {
                       }`}
                     />
                     <span className="text-slate-400 dark:text-slate-500 text-sm w-6 shrink-0">
-                      {i + 1}
+                      {(safePage - 1) * PAGE_SIZE + i + 1}
                     </span>
                     <span className="flex-1 min-w-0">
                       <span className="block text-base font-medium truncate">
@@ -257,6 +295,35 @@ const TrackTopics = () => {
                   </button>
                 );
               })}
+            </div>
+            <div className="py-3 flex items-center justify-end gap-2 text-sm">
+              <button
+                disabled={safePage <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="px-3 py-1 rounded bg-slate-200 disabled:opacity-40 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700"
+              >
+                Prev
+              </button>
+              {[...Array(totalPages).keys()].slice(0, 7).map((k) => (
+                <button
+                  key={k}
+                  onClick={() => setPage(k + 1)}
+                  className={`px-3 py-1 rounded ${
+                    safePage === k + 1
+                      ? "bg-emerald-600 text-white"
+                      : "bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700"
+                  }`}
+                >
+                  {k + 1}
+                </button>
+              ))}
+              <button
+                disabled={safePage >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                className="px-3 py-1 rounded bg-slate-200 disabled:opacity-40 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700"
+              >
+                Next
+              </button>
             </div>
           </>
         )}

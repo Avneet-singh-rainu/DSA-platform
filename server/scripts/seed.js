@@ -7,7 +7,7 @@ const prisma = new PrismaClient({ adapter });
 
 const topics = [
   {
-    name: "Array",
+    name: "Arrays",
     title: "Find the Missing Number",
     desc: "Given an array containing n distinct numbers taken from 0, 1, 2, ..., n, find the one that is missing from the array.",
     difficulty: "Medium",
@@ -20,7 +20,7 @@ const topics = [
     link: "https://leetcode.com/problems/missing-number/",
   },
   {
-    name: "Array",
+    name: "Arrays",
     title: "Maximum Subarray",
     desc: "Find the contiguous subarray (containing at least one number) which has the largest sum and return its sum.",
     difficulty: "Easy",
@@ -33,7 +33,7 @@ const topics = [
     link: "https://leetcode.com/problems/maximum-subarray/",
   },
   {
-    name: "Array",
+    name: "Arrays",
     title: "Contains Duplicate",
     desc: "Given an array of integers, find if the array contains any duplicates.",
     difficulty: "Easy",
@@ -46,7 +46,7 @@ const topics = [
     link: "https://leetcode.com/problems/contains-duplicate/",
   },
   {
-    name: "Array",
+    name: "Arrays",
     title: "Product of Array Except Self",
     desc: "Given an array nums of n integers where n > 1, return an array output such that output[i] is equal to the product of all the elements of nums except nums[i].",
     difficulty: "Medium",
@@ -59,7 +59,7 @@ const topics = [
     link: "https://leetcode.com/problems/product-of-array-except-self/",
   },
   {
-    name: "Array",
+    name: "Arrays",
     title: "Maximum Product Subarray",
     desc: "Find the contiguous subarray within an array (containing at least one number) which has the largest product.",
     difficulty: "Medium",
@@ -72,7 +72,7 @@ const topics = [
     link: "https://leetcode.com/problems/maximum-product-subarray/",
   },
   {
-    name: "Array",
+    name: "Arrays",
     title: "Find Peak Element",
     desc: "A peak element is an element that is greater than its neighbors. Find a peak element and return its index.",
     difficulty: "Medium",
@@ -85,7 +85,7 @@ const topics = [
     link: "https://leetcode.com/problems/find-peak-element/",
   },
   {
-    name: "Array",
+    name: "Arrays",
     title: "Longest Consecutive Sequence",
     desc: "Given an unsorted array of integers, find the length of the longest consecutive elements sequence.",
     difficulty: "Hard",
@@ -98,7 +98,7 @@ const topics = [
     link: "https://leetcode.com/problems/longest-consecutive-sequence/",
   },
   {
-    name: "Array",
+    name: "Arrays",
     title: "Search in Rotated Sorted Array",
     desc: "You are given an integer array nums sorted in ascending order rotated at an unknown pivot. Find the target in nums.",
     difficulty: "Medium",
@@ -111,7 +111,7 @@ const topics = [
     link: "https://leetcode.com/problems/search-in-rotated-sorted-array/",
   },
   {
-    name: "Array",
+    name: "Arrays",
     title: "Trapping Rain Water",
     desc: "Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.",
     difficulty: "Hard",
@@ -124,7 +124,7 @@ const topics = [
     link: "https://leetcode.com/problems/trapping-rain-water/",
   },
   {
-    name: "Array",
+    name: "Arrays",
     title: "Rotate Image",
     desc: "You are given an n x n 2D matrix representing an image, rotate the image by 90 degrees (clockwise).",
     difficulty: "Medium",
@@ -136,7 +136,7 @@ const topics = [
     link: "https://leetcode.com/problems/rotate-image/",
   },
   {
-    name: "Array",
+    name: "Arrays",
     title: "Jump Game",
     desc: "Each element represents your maximum jump length at that position. Determine if you are able to reach the last index.",
     difficulty: "Medium",
@@ -149,7 +149,7 @@ const topics = [
     link: "https://leetcode.com/problems/jump-game/",
   },
   {
-    name: "Array",
+    name: "Arrays",
     title: "Merge Intervals",
     desc: "Given an array of intervals where intervals[i] = [starti, endi], merge all overlapping intervals.",
     difficulty: "Medium",
@@ -161,7 +161,7 @@ const topics = [
     link: "https://leetcode.com/problems/merge-intervals/",
   },
   {
-    name: "Array",
+    name: "Arrays",
     title: "3Sum",
     desc: "Given an array nums of n integers, find all unique triplets which gives sum zero.",
     difficulty: "Medium",
@@ -173,7 +173,7 @@ const topics = [
     link: "https://leetcode.com/problems/3sum/",
   },
   {
-    name: "String",
+    name: "Strings",
     title: "Valid Anagram",
     desc: "Given two strings s and t, return true if t is an anagram of s, and false otherwise.",
     difficulty: "Easy",
@@ -186,7 +186,7 @@ const topics = [
     link: "https://leetcode.com/problems/valid-anagram/",
   },
   {
-    name: "String",
+    name: "Strings",
     title: "Longest Substring Without Repeating Characters",
     desc: "Given a string s, find the length of the longest substring without repeating characters.",
     difficulty: "Medium",
