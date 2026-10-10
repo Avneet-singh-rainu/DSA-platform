@@ -14,8 +14,9 @@ function difficultyColor(d) {
   return "text-rose-600 dark:text-rose-400";
 }
 
-// Wandbox compiles as prog.java, so no `public class` (it fails to compile).
-const STARTER = `import java.util.*;
+// Wandbox compiles Java as prog.java, so no `public class` (it fails to compile).
+const STARTERS = {
+  java: `import java.util.*;
 
 class Main {
     public static void main(String[] args) {
@@ -23,12 +24,44 @@ class Main {
         // Write your code here
         System.out.println("Hello EatCode");
     }
-}`;
+}`,
+  python: `import sys
 
-function toCode(c) {
+def solve():
+    data = sys.stdin.read().strip()
+    # Write your code here
+    print("Hello EatCode")
+
+if __name__ == "__main__":
+    solve()`,
+  javascript: `const fs = require('fs');
+const input = fs.readFileSync(0, 'utf8').trim();
+// Write your code here
+console.log("Hello EatCode");`,
+  cpp: `#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    // Write your code here
+    cout << "Hello EatCode";
+    return 0;
+}`,
+};
+
+const LANG_OPTIONS = [
+  { id: "java", label: "Java", monaco: "java" },
+  { id: "python", label: "Python", monaco: "python" },
+  { id: "javascript", label: "JavaScript", monaco: "javascript" },
+  { id: "cpp", label: "C++", monaco: "cpp" },
+];
+
+function toCode(c, lang) {
   if (Array.isArray(c)) c = c.join("\n");
   const s = c == null ? "" : String(c);
-  return s.trim() ? s : STARTER;
+  if (s.trim()) return s;
+  return STARTERS[lang] || STARTERS.java;
 }
 
 function CodeEditor() {
@@ -40,7 +73,13 @@ function CodeEditor() {
   const { isLoading, isError, errorMessage } = useSelector(
     (state) => state.codeExecution
   );
-  const [code, setCode] = useState(() => toCode(location.state?.data?.code));
+  const [lang, setLang] = useState("java");
+  // Keep edits per language so switching doesn't lose work
+  const [codes, setCodes] = useState(() => ({
+    java: toCode(location.state?.data?.code, "java"),
+  }));
+  const code = codes[lang] ?? STARTERS[lang];
+  const setCode = (v) => setCodes((prev) => ({ ...prev, [lang]: v || "" }));
   const [output, setOutput] = useState("");
   const [inp, setInp] = useState("");
   const [showVideo, setShowVideo] = useState(false);
@@ -57,7 +96,7 @@ function CodeEditor() {
       try {
         const resp = await axios.get(`${API_BASE}/api/topics/id/${qid}`);
         setData(resp.data);
-        setCode(toCode(resp.data?.code));
+        setCodes({ java: toCode(resp.data?.code, "java") });
       } catch (e) {
         console.error("Failed to load problem:", e);
       } finally {
@@ -69,7 +108,9 @@ function CodeEditor() {
 
   const runCode = async () => {
     try {
-      const resultAction = await dispatch(executeCode({ code, input: inp }));
+      const resultAction = await dispatch(
+        executeCode({ code, input: inp, language: lang })
+      );
       if (resultAction.meta.requestStatus === "fulfilled") {
         setOutput(resultAction.payload.output || "No output");
       } else {
@@ -236,7 +277,20 @@ function CodeEditor() {
           <div className="flex flex-col gap-3 lg:min-h-0 lg:overflow-hidden">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex flex-col min-h-[320px] lg:flex-1 lg:min-h-0">
               <div className="flex items-center justify-between mb-2 px-1">
-                <h2 className="font-semibold text-sm">Code Editor · Java</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-semibold text-sm">Code Editor</h2>
+                  <select
+                    value={lang}
+                    onChange={(e) => setLang(e.target.value)}
+                    className="text-sm px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    {LANG_OPTIONS.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <button
                   onClick={runCode}
                   disabled={isLoading}
@@ -249,6 +303,9 @@ function CodeEditor() {
                 <Editor
                   height="100%"
                   defaultLanguage="java"
+                  language={
+                    LANG_OPTIONS.find((l) => l.id === lang)?.monaco || "java"
+                  }
                   theme={isDark ? "vs-dark" : "vs"}
                   value={code}
                   onChange={(v) => setCode(v || "")}

@@ -1,6 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchAllTopics, fetchTracks } from "../utils/api";
+import fetchUserByid from "../utils/fetchUserById";
+import { topicSlug, trackSlug } from "../utils/slug";
+
+function getStoredUser() {
+  try {
+    const raw = sessionStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed[0] : parsed;
+  } catch {
+    return null;
+  }
+}
 
 function difficultyColor(d) {
   if (d === "Easy") return "text-emerald-600 dark:text-emerald-400";
@@ -8,12 +21,15 @@ function difficultyColor(d) {
   return "text-rose-600 dark:text-rose-400";
 }
 
-// Home: hero + live stats, tracks, sample problems. No fake content.
+// Home: bold hero + personal continue band + live tracks.
 const Home = () => {
   const [tracks, setTracks] = useState([]);
   const [topics, setTopics] = useState([]);
+  const [completedIds, setCompletedIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const stored = getStoredUser();
+  const uid = stored?._id || stored?.id;
 
   useEffect(() => {
     const load = async () => {
@@ -21,6 +37,10 @@ const Home = () => {
         const [tr, tp] = await Promise.all([fetchTracks(), fetchAllTopics()]);
         if (Array.isArray(tr)) setTracks(tr);
         if (Array.isArray(tp)) setTopics(tp);
+        if (uid) {
+          const u = await fetchUserByid(uid).catch(() => null);
+          if (u) setCompletedIds(new Set((u.completed || []).map((c) => c.questionId)));
+        }
       } catch (e) {
         console.error("Error fetching home data:", e);
       } finally {
@@ -28,69 +48,111 @@ const Home = () => {
       }
     };
     load();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uid]);
 
   const topicCount = useMemo(() => {
-    const s = new Set(topics.map((t) => (t.name || "Misc").trim()));
-    return s.size;
+    return new Set(topics.map((t) => (t.name || "Misc").trim())).size;
   }, [topics]);
 
-  const sample = useMemo(() => {
-    const seen = new Set();
-    const out = [];
-    for (const t of topics) {
-      const key = t.name || "";
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(t);
-      if (out.length >= 6) break;
-    }
-    return out;
-  }, [topics]);
+  const upNext = useMemo(
+    () => topics.find((t) => !completedIds.has(t._id || t.id)) || null,
+    [topics, completedIds]
+  );
+
+  const solved = completedIds.size;
+  const rate = topics.length > 0 ? Math.round((solved / topics.length) * 100) : 0;
 
   const openTopic = (t) => {
-    const trackSlug = (t.track || "DSA").toLowerCase();
-    const topicSlug = `${(t.name || "misc").toLowerCase()}s`;
-    navigate(`/topics/${trackSlug}/${topicSlug}/${t._id || t.id}`, {
-      state: { data: t },
-    });
+    navigate(
+      `/topics/${trackSlug(t.track)}/${topicSlug(t.name)}/${t._id || t.id}`,
+      { state: { data: t } }
+    );
   };
 
   return (
     <div className="w-full">
-      <div className="w-full max-w-3xl mx-auto bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 min-h-screen px-4">
+      <div className="w-full max-w-4xl mx-auto bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 min-h-screen px-4">
         {/* Hero */}
-        <section className="py-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 text-emerald-700 dark:text-emerald-400">
-            Master Skills Through Practice
-          </h1>
-          <p className="text-slate-600 dark:text-slate-300 mb-6">
-            DSA, AI, and more — learn by solving, not just reading.
+        <section className="pt-16 pb-10 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-400 mb-4">
+            DSA · AI · Hands-on
           </p>
-          <Link
-            to="/topics"
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-6 rounded-full"
-          >
-            Start solving
-          </Link>
+          <h1 className="text-5xl md:text-7xl font-extrabold leading-tight">
+            Learn by{" "}
+            <span className="bg-gradient-to-r from-emerald-600 to-teal-400 dark:from-emerald-400 dark:to-teal-300 bg-clip-text text-transparent">
+              solving
+            </span>
+            ,<br />
+            not just reading.
+          </h1>
+          <p className="text-lg text-slate-600 dark:text-slate-300 mt-5 mb-8">
+            {loading
+              ? "Loading content..."
+              : `${topics.length} problems · ${topicCount} topics · ${tracks.length} tracks and growing.`}
+          </p>
+          <div className="flex justify-center gap-3">
+            <Link
+              to="/topics"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-7 rounded-full"
+            >
+              Start solving
+            </Link>
+            {!uid && (
+              <Link
+                to="/signup"
+                className="py-3 px-7 rounded-full font-bold border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900"
+              >
+                Create account
+              </Link>
+            )}
+          </div>
         </section>
 
-        {/* Live stats */}
-        <section className="flex justify-center gap-8 py-4 border-y border-slate-200 dark:border-slate-800 mb-8">
-          {[
-            { v: loading ? "…" : topics.length, l: "Problems" },
-            { v: loading ? "…" : topicCount, l: "Topics" },
-            { v: loading ? "…" : tracks.length, l: "Tracks" },
-          ].map((s) => (
-            <div key={s.l} className="text-center">
-              <p className="text-2xl font-bold">{s.v}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{s.l}</p>
+        {/* Continue band */}
+        {!loading && upNext && (
+          <section className="mb-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 p-5 flex flex-wrap items-center gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
+                {solved > 0 ? "Pick up where you left off" : "Start here"}
+              </p>
+              <button
+                onClick={() => openTopic(upNext)}
+                className="text-lg font-bold text-left hover:underline truncate block w-full"
+              >
+                {upNext.title}
+              </button>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {upNext.track} · {upNext.name}
+                {upNext.kind !== "article" && (
+                  <>
+                    {" · "}
+                    <span className={difficultyColor(upNext.difficulty)}>
+                      {upNext.difficulty}
+                    </span>
+                  </>
+                )}
+              </p>
+              {uid && (
+                <div className="mt-2 h-1.5 rounded-full bg-emerald-200/60 dark:bg-slate-800 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-emerald-500"
+                    style={{ width: `${rate}%` }}
+                  />
+                </div>
+              )}
             </div>
-          ))}
-        </section>
+            <button
+              onClick={() => openTopic(upNext)}
+              className="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-full"
+            >
+              {upNext.kind === "article" ? "Read →" : "Solve →"}
+            </button>
+          </section>
+        )}
 
         {/* Tracks */}
-        <section className="pb-8">
+        <section className="pb-10">
           <div className="flex items-baseline justify-between mb-2">
             <h2 className="text-xl font-bold">Tracks</h2>
             <Link
@@ -103,10 +165,6 @@ const Home = () => {
           {loading ? (
             <p className="text-slate-500 dark:text-slate-400 py-6 text-center">
               Loading tracks...
-            </p>
-          ) : tracks.length === 0 ? (
-            <p className="text-slate-500 dark:text-slate-400 py-6 text-center">
-              No tracks yet — check back soon.
             </p>
           ) : (
             <div className="divide-y divide-slate-200 dark:divide-slate-800 border-y border-slate-200 dark:border-slate-800">
@@ -133,70 +191,6 @@ const Home = () => {
               ))}
             </div>
           )}
-        </section>
-
-        {/* Sample problems */}
-        {!loading && sample.length > 0 && (
-          <section className="pb-8">
-            <h2 className="text-xl font-bold mb-2">Try a problem</h2>
-            <div className="divide-y divide-slate-200 dark:divide-slate-800 border-y border-slate-200 dark:border-slate-800">
-              {sample.map((t) => {
-                const id = t._id || t.id;
-                return (
-                  <div key={id} className="flex items-center gap-3 py-2.5 px-2">
-                    <button
-                      onClick={() => openTopic(t)}
-                      className="flex-1 min-w-0 text-left hover:text-emerald-700 dark:hover:text-emerald-300"
-                    >
-                      <span className="block text-sm font-medium truncate">
-                        {t.title}
-                      </span>
-                      <span className="block text-xs text-slate-500 dark:text-slate-400">
-                        {t.track} · {t.name}
-                      </span>
-                    </button>
-                    <span
-                      className={`text-xs font-semibold shrink-0 ${difficultyColor(
-                        t.difficulty
-                      )}`}
-                    >
-                      {t.difficulty}
-                    </span>
-                    <button
-                      onClick={() => openTopic(t)}
-                      className="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white text-xs py-1 px-3 rounded"
-                    >
-                      Solve
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* How it works */}
-        <section className="pb-8">
-          <h2 className="text-xl font-bold mb-3">How it works</h2>
-          <ol className="space-y-3">
-            {[
-              ["1", "Pick a track and topic", "DSA today, AI tomorrow — content grows over time."],
-              ["2", "Solve in the editor", "Examples, video walkthroughs, and runnable Java."],
-              ["3", "Track progress", "Solves, bookmarks, and streaks on your profile."],
-            ].map(([n, title, text]) => (
-              <li key={n} className="flex gap-3">
-                <span className="text-emerald-700 dark:text-emerald-400 font-bold text-sm shrink-0">
-                  {n}.
-                </span>
-                <div>
-                  <p className="font-semibold text-sm">{title}</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    {text}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
         </section>
 
         <footer className="py-6 text-center">
