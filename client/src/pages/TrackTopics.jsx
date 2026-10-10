@@ -1,14 +1,33 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { API_BASE } from "../utils/apiBase";
 import { topicSlug, trackSlug } from "../utils/slug";
+import fetchUserByid from "../utils/fetchUserById";
 import TrackDocs from "../components/TrackDocs";
 
-// /topics/:track -> topics inside one track (DSA, AI, ...)
-// Each topic expands in place to reveal its articles/problems.
+function getStoredUser() {
+  try {
+    const raw = sessionStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed[0] : parsed;
+  } catch {
+    return null;
+  }
+}
+
+function difficultyColor(d) {
+  if (d === "Easy") return "text-emerald-600 dark:text-emerald-400";
+  if (d === "Medium") return "text-amber-600 dark:text-amber-400";
+  return "text-rose-600 dark:text-rose-400";
+}
+
+// /topics/:track -> topics with their items inline on one page.
+// Article tracks render the docs layout instead.
 const TrackTopics = () => {
   const { track } = useParams();
+  const navigate = useNavigate();
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -39,22 +58,73 @@ const TrackTopics = () => {
     }
     return [...map.entries()]
       .map(([name, items]) => ({ name, items, total: items.length }))
-      .filter((g) => g.name.toLowerCase().includes(query.toLowerCase()))
       .sort((a, b) => b.total - a.total);
-  }, [topics, query]);
+  }, [topics]);
+
+  const topicNames = useMemo(() => groups.map((g) => g.name), [groups]);
+  const [topicFilter, setTopicFilter] = useState("All");
+  const [levelFilter, setLevelFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [bookmarks, setBookmarks] = useState([]);
+  const [completedIds, setCompletedIds] = useState(new Set());
+
+  // Progress for solved/saved indicators + status filter (logged-in only)
+  useEffect(() => {
+    const stored = getStoredUser();
+    const uid = stored?._id || stored?.id;
+    if (!uid) {
+      setBookmarks([]);
+      setCompletedIds(new Set());
+      return;
+    }
+    fetchUserByid(uid)
+      .then((u) => {
+        if (!u) return;
+        setBookmarks(u.bookmarks || []);
+        setCompletedIds(
+          new Set((u.completed || []).map((c) => c.questionId))
+        );
+      })
+      .catch(() => {});
+  }, [track]);
+
+  const flat = useMemo(() => {
+    return topics.filter((t) => {
+      const id = t._id || t.id;
+      if (
+        query &&
+        !`${t.title} ${(t.tags || []).join(" ")}`
+          .toLowerCase()
+          .includes(query.toLowerCase())
+      )
+        return false;
+      if (topicFilter !== "All" && (t.name || "Misc").trim() !== topicFilter)
+        return false;
+      if (levelFilter !== "All" && t.difficulty !== levelFilter) return false;
+      const done = completedIds.has(id);
+      if (statusFilter === "Solved" && !done) return false;
+      if (statusFilter === "Unsolved" && done) return false;
+      if (statusFilter === "Bookmarked" && !bookmarks.includes(id))
+        return false;
+      return true;
+    });
+  }, [topics, query, topicFilter, levelFilter, statusFilter, completedIds, bookmarks]);
 
   const basePath = `/topics/${trackSlug(track)}`;
   const allArticles =
     topics.length > 0 &&
     topics.every((t) => (t.kind || "problem") === "article");
 
+  const openItem = (groupName, item) => {
+    const id = item._id || item.id;
+    navigate(`${basePath}/${topicSlug(groupName)}/${id}`, {
+      state: { data: item },
+    });
+  };
+
   return (
     <div className="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 min-h-screen py-8">
-      <div
-        className={`container mx-auto px-4 ${
-          allArticles ? "" : "max-w-3xl"
-        }`}
-      >
+      <div className={`container mx-auto px-4 ${allArticles ? "" : "max-w-3xl"}`}>
         <Link
           to="/topics"
           className="text-emerald-700 dark:text-emerald-400 hover:underline text-sm"
@@ -78,13 +148,45 @@ const TrackTopics = () => {
           )}
         </p>
         {!allArticles && (
-          <div className="max-w-md mx-auto mb-6">
+          <div className="flex flex-col md:flex-row gap-2 mb-4">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search topics..."
-              className="w-full px-4 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Search problems..."
+              className="flex-1 px-4 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
+            <select
+              value={topicFilter}
+              onChange={(e) => setTopicFilter(e.target.value)}
+              className="px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sm"
+            >
+              <option value="All">All topics</option>
+              {topicNames.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+            <select
+              value={levelFilter}
+              onChange={(e) => setLevelFilter(e.target.value)}
+              className="px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sm"
+            >
+              <option value="All">All levels</option>
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sm"
+            >
+              <option value="All">All status</option>
+              <option value="Solved">Solved</option>
+              <option value="Unsolved">Unsolved</option>
+              <option value="Bookmarked">Bookmarked</option>
+            </select>
           </div>
         )}
 
@@ -98,29 +200,65 @@ const TrackTopics = () => {
           </p>
         ) : allArticles ? (
           <TrackDocs groups={groups} />
+        ) : flat.length === 0 ? (
+          <p className="text-center text-slate-500 dark:text-slate-400 py-10">
+            No problems match your filters.
+          </p>
         ) : (
-          <div className="divide-y divide-slate-200 dark:divide-slate-800 border-y border-slate-200 dark:border-slate-800">
-            {groups.map((g) => (
-              <Link
-                key={g.name}
-                to={`${basePath}/${topicSlug(g.name)}`}
-                className="flex items-center gap-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-900 px-2 rounded"
-              >
-                <span className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
-                  {g.name.slice(0, 2).toUpperCase()}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold">{g.name}</span>
-                  <span className="block text-xs text-slate-500 dark:text-slate-400">
-                    {g.total} item{g.total !== 1 ? "s" : ""}
-                  </span>
-                </span>
-                <span className="text-slate-400 dark:text-slate-500 shrink-0">
-                  →
-                </span>
-              </Link>
-            ))}
-          </div>
+          <>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+              Showing {flat.length} of {topics.length} problems
+            </p>
+            <div className="divide-y divide-slate-200 dark:divide-slate-800 border-y border-slate-200 dark:border-slate-800">
+              {flat.map((item, i) => {
+                const id = item._id || item.id;
+                const gName = (item.name || "Misc").trim();
+                const done = completedIds.has(id);
+                const marked = bookmarks.includes(id);
+                return (
+                  <button
+                    key={id}
+                    onClick={() => openItem(gName, item)}
+                    className="w-full flex items-center gap-3 py-2.5 px-2 hover:bg-slate-100 dark:hover:bg-slate-900 text-left"
+                  >
+                    <span
+                      title={done ? "Solved" : "Unsolved"}
+                      className={`w-2 h-2 rounded-full shrink-0 ${
+                        done
+                          ? "bg-emerald-500"
+                          : "bg-slate-300 dark:bg-slate-700"
+                      }`}
+                    />
+                    <span className="text-slate-400 dark:text-slate-500 text-sm w-6 shrink-0">
+                      {i + 1}
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-base font-medium truncate">
+                        {item.title}
+                        {marked && (
+                          <span className="text-amber-500 ml-1.5">★</span>
+                        )}
+                      </span>
+                      <span className="block text-xs text-slate-400 dark:text-slate-500 truncate">
+                        {gName} · {(item.tags || []).slice(0, 3).join(" · ")}
+                        {done && " · Solved"}
+                      </span>
+                    </span>
+                    <span
+                      className={`text-sm font-medium shrink-0 ${difficultyColor(
+                        item.difficulty
+                      )}`}
+                    >
+                      {item.difficulty}
+                    </span>
+                    <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 shrink-0">
+                      Solve →
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
     </div>

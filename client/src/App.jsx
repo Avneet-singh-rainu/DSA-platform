@@ -5,7 +5,6 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Topics from "./pages/Topics";
 import TrackTopics from "./pages/TrackTopics";
-import EachTopic from "./pages/EachTopic";
 import CodeEditor from "./components/CodeEditor";
 import DashBoard from "./components/DashBoard";
 import About from "./pages/About";
@@ -24,7 +23,6 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/topics" element={<Topics />} />
             <Route path="/topics/:track" element={<TrackTopics />} />
-            <Route path="/topics/:track/:topic" element={<EachTopic />} />
             <Route
               path="/topics/:track/:topic/:question"
               element={<CodeEditor />}

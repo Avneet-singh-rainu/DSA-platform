@@ -1,12 +1,27 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Editor from "@monaco-editor/react";
+import ReactPlayer from "react-player";
 import { useDispatch, useSelector } from "react-redux";
 import { executeCode } from "../store/codeExecutionSlice";
 import { Link, useLocation, useParams } from "react-router-dom";
 import axios from "axios";
 import { API_BASE } from "../utils/apiBase";
 import { useTheme } from "../hooks/useTheme";
+import { useNavigate } from "react-router-dom";
+import api from "../utils/authApi";
+import fetchUserByid from "../utils/fetchUserById";
 import ArticleView from "./ArticleView";
+
+function getStoredUser() {
+  try {
+    const raw = sessionStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed[0] : parsed;
+  } catch {
+    return null;
+  }
+}
 
 function difficultyColor(d) {
   if (d === "Easy") return "text-emerald-600 dark:text-emerald-400";
@@ -82,8 +97,51 @@ function CodeEditor() {
   const setCode = (v) => setCodes((prev) => ({ ...prev, [lang]: v || "" }));
   const [output, setOutput] = useState("");
   const [inp, setInp] = useState("");
-  const [showVideo, setShowVideo] = useState(false);
+  const [showVideo, setShowVideo] = useState(true);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  // Progress tracking (replaces the old per-topic list page)
+  const [isSaved, setIsSaved] = useState(false);
+  const [isDone, setIsDone] = useState(false);
+  const pid = data?._id || data?.id;
+  const storedUid = getStoredUser();
+  const myId = storedUid?._id || storedUid?.id;
+
+  useEffect(() => {
+    if (!myId || !pid) return;
+    fetchUserByid(myId)
+      .then((u) => {
+        if (!u) return;
+        setIsSaved((u.bookmarks || []).includes(pid));
+        setIsDone((u.completed || []).some((c) => c.questionId === pid));
+      })
+      .catch(() => {});
+  }, [myId, pid]);
+
+  const toggleSave = async () => {
+    if (!myId) return navigate("/login");
+    const next = !isSaved;
+    setIsSaved(next);
+    try {
+      await api.post(`${API_BASE}/user/${myId}/${pid}`);
+    } catch (e) {
+      setIsSaved(!next);
+      if (e.response?.status === 401) navigate("/login");
+    }
+  };
+
+  const toggleDone = async () => {
+    if (!myId) return navigate("/login");
+    const next = !isDone;
+    setIsDone(next);
+    try {
+      await api.put(`${API_BASE}/user/${myId}/complete/${pid}`);
+    } catch (e) {
+      setIsDone(!next);
+      if (e.response?.status === 401) navigate("/login");
+    }
+  };
 
   useEffect(() => {
     if (data) return;
@@ -126,12 +184,11 @@ function CodeEditor() {
   };
 
   const listPath = useMemo(() => {
-    if (params.track && params.topic) {
-      return `/topics/${params.track.toLowerCase()}/${params.topic.toLowerCase()}`;
-    }
+    const t = params.track || data?.track;
+    if (t) return `/topics/${t.toLowerCase()}`;
     // legacy /topics/:topicname/:question URLs
-    return `/topics/${params.topicname || data?.name || "Array"}`;
-  }, [params.track, params.topic, params.topicname, data?.name]);
+    return "/topics";
+  }, [params.track, data?.track]);
 
   // Articles (e.g. LangChain track) render as reading pages, not editors
   if (!loadingProblem && data && (data.kind || "problem") === "article") {
@@ -198,7 +255,29 @@ function CodeEditor() {
           {/* Left: problem */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 lg:overflow-y-auto lg:min-h-0">
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-bold">{data.title}</h1>
+              <h1 className="text-2xl font-bold flex-1 min-w-0">{data.title}</h1>
+              <button
+                onClick={toggleDone}
+                title={isDone ? "Mark as unsolved" : "Mark as solved"}
+                className={`text-xs shrink-0 hover:underline whitespace-nowrap ${
+                  isDone
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-300"
+                }`}
+              >
+                {isDone ? "Solved ✓" : "Mark done"}
+              </button>
+              <button
+                onClick={toggleSave}
+                title={isSaved ? "Remove bookmark" : "Bookmark"}
+                className={`text-xl shrink-0 ${
+                  isSaved
+                    ? "text-amber-500"
+                    : "text-slate-300 hover:text-amber-500 dark:text-slate-600 dark:hover:text-amber-400"
+                }`}
+              >
+                {isSaved ? "★" : "☆"}
+              </button>
               {data.difficulty && (
                 <span
                   className={`${difficultyColor(
@@ -261,14 +340,12 @@ function CodeEditor() {
 
             {showVideo && data.videoUrl && (
               <div className="mt-4 aspect-video bg-black rounded-lg overflow-hidden">
-                <a
-                  href={data.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-emerald-300 text-sm p-4 block hover:underline"
-                >
-                  Open video: {data.videoUrl}
-                </a>
+                <ReactPlayer
+                  url={data.videoUrl}
+                  controls
+                  width="100%"
+                  height="100%"
+                />
               </div>
             )}
           </div>

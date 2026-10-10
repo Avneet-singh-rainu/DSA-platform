@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import ReactPlayer from "react-player";
 
 // Long-form article view for kind === "article" (e.g. LangChain track).
 // Body comes from `content` (markdown); diagrams from `exampleImages`.
 const ArticleView = ({ data }) => {
+  const [showVideo, setShowVideo] = useState(true);
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 lg:p-8 lg:overflow-y-auto lg:min-h-0">
       <h1 className="text-4xl font-bold">{data.title}</h1>
@@ -57,16 +59,25 @@ const ArticleView = ({ data }) => {
           </a>
         )}
         {data.videoUrl && (
-          <a
-            href={data.videoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setShowVideo((v) => !v)}
             className="text-emerald-700 dark:text-emerald-400 hover:underline"
           >
-            Watch video →
-          </a>
+            {showVideo ? "Hide video" : "Watch video"}
+          </button>
         )}
       </div>
+
+      {showVideo && data.videoUrl && (
+        <div className="mt-4 aspect-video bg-black rounded-lg overflow-hidden">
+          <ReactPlayer
+            url={data.videoUrl}
+            controls
+            width="100%"
+            height="100%"
+          />
+        </div>
+      )}
     </div>
   );
 };
