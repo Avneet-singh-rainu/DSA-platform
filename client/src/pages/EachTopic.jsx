@@ -162,13 +162,13 @@ const EachTopic = () => {
                             {fetchData.map((t, index) => (
                                 <div
                                     key={index}
-                                    className="bg-gray-800 p-2 md:p-6 lg:p-8 rounded-lg shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+                                    className="bg-gray-800 p-2 md:p-6 lg:p-8 rounded-lg shadow-xl"
                                 >
                                     {/* Question Section */}
                                     <div className="w-full">
                                         <div className="md:flex grid grid-rows-2 gap-2 justify-between items-center mb-6">
                                             <h1 className="text-2xl lg:text-3xl font-bold">
-                                                <div className="w-[calc(90vw-10px)] md:w-full bg-gray-700 p-4 rounded-lg text-center hover:scale-90">
+                                                <div className="w-[calc(90vw-10px)] md:w-full bg-gray-700 p-4 rounded-lg text-center">
                                                     {t.title}
                                                 </div>
                                             </h1>

@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logOut } from "../store/userSlice";
-import { motion } from "framer-motion";
 import ClearIcon from "@mui/icons-material/Clear";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
@@ -23,14 +22,7 @@ const Navbar = () => {
     };
 
     return (
-        <motion.nav
-            initial={{ opacity: 0, x: "-100vw" }}
-            animate={{
-                opacity: 1,
-                x: 0,
-                transitionDuration: 0.5,
-                transitionBehavior: "revert-layer",
-            }}
+        <nav
             className={`md:w-full md:relative md:bg-gray-80 p-4 z-20  ${
                 isOpen ? "bg-gray-900" : ""
             }`}
@@ -125,7 +117,7 @@ const Navbar = () => {
                     </button>
                 </div>
             </div>
-        </motion.nav>
+        </nav>
     );
 };
 

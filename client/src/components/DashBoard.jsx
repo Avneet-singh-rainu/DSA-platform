@@ -6,7 +6,6 @@ import { fetchUser } from "../store/userSlice";
 import fetchUserByid from "../utils/fetchUserById";
 import { fetchAllTopics, API_THIS_MONTH_QUESTIONS } from "../utils/api";
 ChartJS.register(...registerables);
-import { animate, motion } from "framer-motion";
 
 const UserDashboard = () => {
     const user = JSON.parse(sessionStorage.getItem("user")) || "";
@@ -112,50 +111,26 @@ const UserDashboard = () => {
         },
     };
 
-    const cards = {
-        initial: { opacity: 0, y: "120px" },
-        animate: {
-            opacity: 1,
-            y: 0,
-            transition: { duration: 1 },
-        },
-    };
-
     return (
         <div className=" min-h-screen bg-gray-900 text-gray-200 p-8">
             <h1 className=" text-4xl font-bold mb-8 text-center">
                 User Dashboard
             </h1>
-            <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {/* Cards */}
-                <motion.div
-                    initial="initial"
-                    whileInView="animate"
-                    variants={cards}
-                    className="bg-gray-800 p-6 rounded-lg shadow-lg"
-                >
+                <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                     <h2 className="text-2xl font-semibold mb-4">
                         Total Questions
                     </h2>
                     <p className="text-3xl font-bold">{totalQuestions}</p>
-                </motion.div>
-                <motion.div
-                    initial="initial"
-                    whileInView="animate"
-                    variants={cards}
-                    className="bg-gray-800 p-6 rounded-lg shadow-lg"
-                >
+                </div>
+                <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                     <h2 className="text-2xl font-semibold mb-4">
                         Solved Questions
                     </h2>
                     <p className="text-3xl font-bold">{solvedQuestions}</p>
-                </motion.div>
-                <motion.div
-                    initial="initial"
-                    whileInView="animate"
-                    variants={cards}
-                    className="bg-gray-800 p-6 rounded-lg shadow-lg"
-                >
+                </div>
+                <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                     <h2 className="text-2xl font-semibold mb-4 ">
                         Average Difficulty
                     </h2>
@@ -170,35 +145,20 @@ const UserDashboard = () => {
                     >
                         {avgDifficulty}
                     </p>
-                </motion.div>
+                </div>
 
                 {/* Chart */}
-                <motion.div
-                    initial="initial"
-                    whileInView="animate"
-                    variants={cards}
-                    whileHover={{
-                        scale: 1.5,
-                        x: "-300px",
-                        transition: { duration: 0.5, delay: 0.5 },
-                    }}
-                    className="col-span-1 md:col-span-2 lg:col-span-3"
-                >
+                <div className="col-span-1 md:col-span-2 lg:col-span-3">
                     <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                         <h2 className="text-2xl font-semibold mb-4">
                             Questions Solved Per Week
                         </h2>
                         <Line data={data} options={options} />
                     </div>
-                </motion.div>
+                </div>
 
                 {/* Recent Questions */}
-                <motion.div
-                    initial="initial"
-                    whileInView="animate"
-                    variants={cards}
-                    className="bg-gray-800 p-6 rounded-lg shadow-lg"
-                >
+                <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                     <h2 className="text-2xl font-semibold mb-4">
                         Recent Questions Solved
                     </h2>
@@ -223,8 +183,8 @@ const UserDashboard = () => {
                             </li>
                         ))}
                     </ul>
-                </motion.div>
-            </motion.div>
+                </div>
+            </div>
         </div>
     );
 };

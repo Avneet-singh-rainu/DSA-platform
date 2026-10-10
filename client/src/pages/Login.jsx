@@ -30,7 +30,7 @@ const Login = () => {
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-gray-900 text-gray-200">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-sm transform transition-transform duration-500 hover:scale-105">
+      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-sm">
         <h2 className="text-3xl font-bold mb-6 text-teal-400">Login</h2>
         {isError && <p className="text-red-400 mb-4">{errorMessage}</p>}
         <form onSubmit={handleSubmit}>
@@ -58,7 +58,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-teal-500 hover:bg-teal-400 disabled:opacity-50 text-white font-bold py-2 px-4 rounded-full transition duration-300 transform hover:scale-105"
+            className="w-full bg-teal-500 hover:bg-teal-400 disabled:opacity-50 text-white font-bold py-2 px-4 rounded-full"
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>

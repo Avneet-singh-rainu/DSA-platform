@@ -28,7 +28,7 @@ const Topics = () => {
           {topics.map((topic) => (
             <div
               key={topic.id}
-              className="bg-gray-800 p-6 rounded-lg shadow-lg transition-transform transform hover:-translate-y-1"
+              className="bg-gray-800 p-6 rounded-lg shadow-lg"
             >
               <img
                 src={topic.image}
