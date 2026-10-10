@@ -8,10 +8,27 @@ const userRoutes = require("./routes/userRoutes");
 const app = express();
 
 // Middleware
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const RAW_FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const FRONTEND_URL = RAW_FRONTEND_URL.replace(/\/+$/, "");
+const ALLOWED_ORIGINS = new Set([
+  FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:3000",
+]);
 app.use(
   cors({
-    origin: [FRONTEND_URL, "http://localhost:5173", "http://localhost:3000"],
+    origin: (origin, cb) => {
+      // Allow same-origin / non-browser clients (no Origin header),
+      // exact matches, and any Netlify deploy preview.
+      if (
+        !origin ||
+        ALLOWED_ORIGINS.has(origin.replace(/\/+$/, "")) ||
+        /\.netlify\.app$/.test(origin)
+      ) {
+        return cb(null, true);
+      }
+      return cb(new Error(`CORS blocked for origin ${origin}`));
+    },
     credentials: true,
   })
 );
