@@ -130,7 +130,7 @@ const ProblemTable = ({
               <div className="flex gap-1.5">
                 <button
                   onClick={() => onToggleCompletion(id)}
-                  title={done ? "Mark unsolved" : "Mark solved"}
+                  title={done ? "Mark as unsolved" : "Mark as solved"}
                   className={`text-xs px-2 py-0.5 rounded border ${
                     done
                       ? "text-green-400 border-green-600"
