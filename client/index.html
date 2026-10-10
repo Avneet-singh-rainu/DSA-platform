@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/eatcode.jpeg" />
@@ -12,9 +12,9 @@
     <script>
       try {
         if (
-          (localStorage.getItem("eatcode-theme") || "dark") !== "dark"
+          (localStorage.getItem("eatcode-theme") || "light") === "dark"
         ) {
-          document.documentElement.classList.remove("dark");
+          document.documentElement.classList.add("dark");
         }
       } catch (e) {}
     </script>

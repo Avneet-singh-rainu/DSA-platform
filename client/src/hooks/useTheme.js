@@ -9,7 +9,7 @@ function initialTheme() {
   } catch {
     // ignore
   }
-  return "dark";
+  return "light";
 }
 
 export function useTheme() {
