@@ -44,6 +44,19 @@ router.post("/", async (req, res) => {
   }
 });
 
+// GET /api/topics/id/:topicId -> single problem by id (for CodeEditor direct load)
+router.get("/id/:topicId", async (req, res) => {
+  try {
+    const topic = await prisma.topic.findUnique({
+      where: { id: req.params.topicId },
+    });
+    if (!topic) return res.status(404).json({ message: "topic not found" });
+    res.status(200).json(withId(topic));
+  } catch (error) {
+    res.status(500).json({ message: "Error", error: String(error) });
+  }
+});
+
 // GET /api/topics/:name -> find by category/name (case-insensitive, plural-tolerant)
 // /topics/arrays -> matches DB name "Array", /topics/strings -> "String"
 router.get("/:name", async (req, res) => {
