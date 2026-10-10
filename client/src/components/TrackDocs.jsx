@@ -30,19 +30,27 @@ const TrackDocs = ({ groups }) => {
               <p className="px-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
                 {g.name}
               </p>
-              {g.items.map((a) => {
+              {g.items.map((a, idx) => {
                 const id = a._id || a.id;
                 const active = (selected._id || selected.id) === id;
+                const numbered = g.items.length > 1;
                 return (
                   <button
                     key={id}
                     onClick={() => setSelectedId(id)}
                     className={`w-full text-left px-2 py-1.5 rounded text-sm truncate ${
+                      numbered ? "pl-5" : ""
+                    } ${
                       active
                         ? "text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-50 dark:bg-slate-900"
                         : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
                     }`}
                   >
+                    {numbered && (
+                      <span className="text-slate-400 dark:text-slate-500 mr-1.5">
+                        {idx + 1}.
+                      </span>
+                    )}
                     {a.title}
                   </button>
                 );
