@@ -44,6 +44,7 @@ const Admin = () => {
   const [kindFilter, setKindFilter] = useState("All");
   const [editing, setEditing] = useState(null); // null | {…form, id?}
   const [saving, setSaving] = useState(false);
+  const [reading, setReading] = useState(0); // pending image reads
   const [error, setError] = useState("");
 
   const load = async () => {
@@ -136,13 +137,17 @@ const Admin = () => {
         setError(`"${f.name}" exceeds 2MB, skipped.`);
         continue;
       }
+      setReading((n) => n + 1);
       const reader = new FileReader();
-      reader.onload = () =>
+      reader.onload = () => {
         setEditing((prev) =>
-          prev
+          prev && reader.result
             ? { ...prev, exampleImages: [...prev.exampleImages, reader.result] }
             : prev
         );
+        setReading((n) => n - 1);
+      };
+      reader.onerror = () => setReading((n) => n - 1);
       reader.readAsDataURL(f);
     }
   };
@@ -357,7 +362,7 @@ const Admin = () => {
               className="text-sm"
             />
             {editing.exampleImages.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-3 mt-2">
                 {editing.exampleImages.map((src, i) => (
                   <div key={i} className="relative">
                     <img
@@ -379,6 +384,14 @@ const Admin = () => {
                     >
                       ×
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard.writeText(`![](image:${i})`)}
+                      title="Copy markdown to place this image in the article body"
+                      className="mt-1 w-full text-[11px] px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-mono"
+                    >
+                      {`![](image:${i})`}
+                    </button>
                   </div>
                 ))}
               </div>
@@ -387,10 +400,16 @@ const Admin = () => {
           <div className="flex gap-2">
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || reading > 0}
               className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-semibold py-2 px-5 rounded-lg"
             >
-              {saving ? "Saving..." : editing.id ? "Update" : "Create"}
+              {reading > 0
+                ? "Loading images..."
+                : saving
+                ? "Saving..."
+                : editing.id
+                ? "Update"
+                : "Create"}
             </button>
             <button
               type="button"

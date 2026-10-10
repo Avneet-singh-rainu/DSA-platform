@@ -91,6 +91,12 @@ router.put("/id/:topicId", authMiddleware, adminMiddleware, async (req, res) => 
   try {
     const { id, _id, _count, createdAt, updatedAt, ...data } = req.body || {};
     if (data.examples === null) data.examples = undefined;
+    // Never persist empty image entries (e.g. interrupted uploads)
+    if (Array.isArray(data.exampleImages)) {
+      data.exampleImages = data.exampleImages.filter(
+        (s) => typeof s === "string" && s.length > 0
+      );
+    }
     const topic = await prisma.topic.update({
       where: { id: req.params.topicId },
       data,
