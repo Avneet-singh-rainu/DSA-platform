@@ -1,23 +1,40 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+// Keyless execution via Wandbox (https://wandbox.org).
+// NOTE: Wandbox saves code as prog.java, so the starter must NOT declare
+// a `public class` (it would fail with "should be declared in Main.java").
+const WANDBOX_URL = "https://wandbox.org/api/compile.json";
+const JAVA_COMPILER = "openjdk-jdk-21+35";
+
 export const executeCode = createAsyncThunk(
   "codeExecution/executeCode",
   async ({ code, input }, { rejectWithValue }) => {
     try {
-      const resp = await axios.post("https://emkc.org/api/v2/piston/execute", {
-        language: "java",
-        version: "15.0.2",
-        files: [
-          {
-            content: code,
-          },
-        ],
-        stdin: input, 
-      });
-      return resp.data;
+      const resp = await axios.post(
+        WANDBOX_URL,
+        {
+          compiler: JAVA_COMPILER,
+          code,
+          stdin: input || "",
+        },
+        { timeout: 60000 }
+      );
+      const d = resp.data;
+      if (d.compiler_error && d.compiler_error.trim()) {
+        return rejectWithValue(d.compiler_error);
+      }
+      const out = [d.program_output, d.program_error]
+        .filter((s) => s && s.trim())
+        .join("\n");
+      return { output: out || "(no output)", status: d.status };
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data?.compiler_error ||
+          error.response?.data?.message ||
+          error.message ||
+          "Something went wrong"
+      );
     }
   }
 );

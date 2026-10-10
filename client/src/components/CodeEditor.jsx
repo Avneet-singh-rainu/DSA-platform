@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Editor from "@monaco-editor/react";
 import { useDispatch, useSelector } from "react-redux";
 import { executeCode } from "../store/codeExecutionSlice";
@@ -12,12 +12,22 @@ function difficultyColor(d) {
   return "text-red-400";
 }
 
-const STARTER = `class Solution {
-    public int solve() {
+// Wandbox compiles as prog.java, so no `public class` (it fails to compile).
+const STARTER = `import java.util.*;
+
+class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
         // Write your code here
-        return 0;
+        System.out.println("Hello EatCode");
     }
 }`;
+
+function toCode(c) {
+  if (Array.isArray(c)) c = c.join("\n");
+  const s = c == null ? "" : String(c);
+  return s.trim() ? s : STARTER;
+}
 
 function CodeEditor() {
   const location = useLocation();
@@ -27,11 +37,7 @@ function CodeEditor() {
   const { isLoading, isError, errorMessage } = useSelector(
     (state) => state.codeExecution
   );
-  const [code, setCode] = useState(
-    Array.isArray(location.state?.data?.code)
-      ? location.state.data.code.join("\n")
-      : location.state?.data?.code || STARTER
-  );
+  const [code, setCode] = useState(() => toCode(location.state?.data?.code));
   const [output, setOutput] = useState("");
   const [inp, setInp] = useState("");
   const [showVideo, setShowVideo] = useState(false);
@@ -48,8 +54,7 @@ function CodeEditor() {
       try {
         const resp = await axios.get(`${API_BASE}/api/topics/id/${qid}`);
         setData(resp.data);
-        const c = resp.data?.code;
-        setCode(Array.isArray(c) ? c.join("\n") : c || STARTER);
+        setCode(toCode(resp.data?.code));
       } catch (e) {
         console.error("Failed to load problem:", e);
       } finally {
@@ -62,7 +67,14 @@ function CodeEditor() {
   const runCode = async () => {
     try {
       const resultAction = await dispatch(executeCode({ code, input: inp }));
-      setOutput(resultAction.payload?.run?.output ?? "No output");
+      if (resultAction.meta.requestStatus === "fulfilled") {
+        setOutput(resultAction.payload.output || "No output");
+      } else {
+        const msg = resultAction.payload;
+        setOutput(
+          `Error: ${typeof msg === "string" ? msg : JSON.stringify(msg)}`
+        );
+      }
     } catch (error) {
       console.error("Execution error:", error);
       setOutput("Error: Something went wrong.");
@@ -89,17 +101,27 @@ function CodeEditor() {
   }
 
   const listPath = `/topics/${params.topicname || (data?.name || "Array")}`;
+  const outputRef = useRef(null);
+  const wasRunning = useRef(false);
+
+  // Bring the output into view when a run finishes (mobile / small screens)
+  useEffect(() => {
+    if (wasRunning.current && !isLoading) {
+      outputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+    wasRunning.current = isLoading;
+  }, [isLoading]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200">
-      <div className="w-full px-4 py-4">
-        <Link to={listPath} className="text-teal-400 hover:underline text-sm">
+    <div className="min-h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-3.5rem)] lg:overflow-hidden bg-gray-900 text-gray-200">
+      <div className="w-full h-full px-4 py-3 flex flex-col gap-3">
+        <Link to={listPath} className="text-teal-400 hover:underline text-sm shrink-0">
           ← Back to problems
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:overflow-hidden">
           {/* Left: problem */}
-          <div className="bg-gray-800 rounded-lg p-6 h-fit">
+          <div className="bg-gray-800 rounded-lg p-5 lg:overflow-y-auto lg:min-h-0">
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-2xl font-bold">{data.title}</h1>
               {data.difficulty && (
@@ -172,21 +194,21 @@ function CodeEditor() {
           </div>
 
           {/* Right: editor */}
-          <div className="flex flex-col gap-4">
-            <div className="bg-gray-800 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="font-semibold">Code Editor · Java</h2>
+          <div className="flex flex-col gap-3 lg:min-h-0 lg:overflow-hidden">
+            <div className="bg-gray-800 rounded-lg p-3 flex flex-col min-h-[320px] lg:flex-1 lg:min-h-0">
+              <div className="flex items-center justify-between mb-2 px-1">
+                <h2 className="font-semibold text-sm">Code Editor · Java</h2>
                 <button
                   onClick={runCode}
                   disabled={isLoading}
-                  className="bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white text-sm font-bold py-2 px-5 rounded"
+                  className="bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white text-sm font-bold py-1.5 px-5 rounded"
                 >
                   {isLoading ? "Running..." : "Run"}
                 </button>
               </div>
-              <div className="rounded-lg overflow-hidden border border-gray-700">
+              <div className="rounded-lg overflow-hidden border border-gray-700 flex-1 min-h-0">
                 <Editor
-                  height="70vh"
+                  height="100%"
                   defaultLanguage="java"
                   theme="vs-dark"
                   value={code}
@@ -200,32 +222,34 @@ function CodeEditor() {
               </div>
             </div>
 
-            <div className="bg-gray-800 rounded-lg p-4">
-              <h3 className="font-semibold mb-2 text-sm text-gray-300">
-                Custom input (stdin)
-              </h3>
-              <textarea
-                value={inp}
-                onChange={(e) => setInp(e.target.value)}
-                rows={3}
-                placeholder="Optional input for your program"
-                className="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="bg-gray-800 rounded-lg p-3">
+                <h3 className="font-semibold mb-2 text-sm text-gray-300">
+                  Input (stdin)
+                </h3>
+                <textarea
+                  value={inp}
+                  onChange={(e) => setInp(e.target.value)}
+                  rows={3}
+                  placeholder="Optional input for your program"
+                  className="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
 
-            <div className="bg-gray-800 rounded-lg p-4">
-              <h3 className="font-semibold mb-2 text-sm text-gray-300">Output</h3>
-              <pre className="whitespace-pre-wrap text-sm bg-gray-900 rounded-lg p-3 min-h-[5rem]">
-                {isLoading
-                  ? "Running..."
-                  : isError
-                  ? `Error: ${
-                      typeof errorMessage === "string"
-                        ? errorMessage
-                        : JSON.stringify(errorMessage)
-                    }`
-                  : output || "Output will appear here"}
-              </pre>
+              <div ref={outputRef} className="bg-gray-800 rounded-lg p-3">
+                <h3 className="font-semibold mb-2 text-sm text-gray-300">Output</h3>
+                <pre className="whitespace-pre-wrap text-sm bg-gray-900 rounded-lg p-3 h-[5.5rem] overflow-y-auto">
+                  {isLoading
+                    ? "Running..."
+                    : isError
+                    ? `Error: ${
+                        typeof errorMessage === "string"
+                          ? errorMessage
+                          : JSON.stringify(errorMessage)
+                      }`
+                    : output || "Output will appear here"}
+                </pre>
+              </div>
             </div>
           </div>
         </div>
