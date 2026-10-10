@@ -34,6 +34,7 @@ const ArticleView = ({ data }) => {
         <div className="markdown-body text-lg leading-relaxed space-y-4 [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mt-8 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-6 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-5 [&_p]:text-slate-700 [&_p]:dark:text-slate-300 [&_li]:text-slate-700 [&_li]:dark:text-slate-300 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:text-emerald-700 [&_a]:dark:text-emerald-400 [&_a]:hover:underline [&_code]:bg-slate-100 [&_code]:dark:bg-slate-800 [&_code]:px-1 [&_code]:rounded [&_code]:text-[15px] [&_pre]:bg-slate-100 [&_pre]:dark:bg-slate-950 [&_pre]:border [&_pre]:border-slate-200 [&_pre]:dark:border-slate-800 [&_pre]:rounded-lg [&_pre]:p-4 [&_pre]:overflow-x-auto [&_pre]:text-[15px] [&_pre_code]:bg-transparent [&_pre_code]:dark:bg-transparent [&_pre_code]:p-0 [&_img]:rounded-lg [&_img]:my-4 [&_table]:w-full [&_table]:text-base [&_th]:text-left [&_th]:border-b [&_th]:border-slate-300 [&_th]:dark:border-slate-700 [&_th]:py-2 [&_td]:border-b [&_td]:border-slate-200 [&_td]:dark:border-slate-800 [&_td]:py-2">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
+            urlTransform={(url) => url}
             components={{
               img: ({ src, alt }) => {
                 const m = /^image:(\d+)$/.exec(src || "");
