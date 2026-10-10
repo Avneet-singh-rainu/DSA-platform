@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const prisma = require("../utils/prisma");
 const { withId } = require("../utils/serialize");
+const { authMiddleware, adminMiddleware } = require("../utils/auth");
 
 // GET /api/topics -> all topics, optional ?track=DSA filter
 router.get("/", async (req, res) => {
@@ -44,8 +45,8 @@ router.get("/tracks", async (req, res) => {
   }
 });
 
-// POST /api/topics -> single or bulk create
-router.post("/", async (req, res) => {
+// POST /api/topics -> single or bulk create (admin only)
+router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const newTopicsData = req.body;
 
@@ -84,6 +85,42 @@ router.get("/id/:topicId", async (req, res) => {
     res.status(500).json({ message: "Error", error: String(error) });
   }
 });
+
+// PUT /api/topics/id/:topicId -> update (admin only)
+router.put("/id/:topicId", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { id, _id, _count, createdAt, updatedAt, ...data } = req.body || {};
+    if (data.examples === null) data.examples = undefined;
+    const topic = await prisma.topic.update({
+      where: { id: req.params.topicId },
+      data,
+    });
+    res.status(200).json(withId(topic));
+  } catch (error) {
+    if (error.code === "P2025") {
+      return res.status(404).json({ message: "topic not found" });
+    }
+    res.status(400).json({ message: String(error.message || error) });
+  }
+});
+
+// DELETE /api/topics/id/:topicId -> delete (admin only)
+router.delete(
+  "/id/:topicId",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      await prisma.topic.delete({ where: { id: req.params.topicId } });
+      res.status(200).json({ message: "deleted" });
+    } catch (error) {
+      if (error.code === "P2025") {
+        return res.status(404).json({ message: "topic not found" });
+      }
+      res.status(400).json({ message: String(error.message || error) });
+    }
+  }
+);
 
 // GET /api/topics/:name -> find by category/name (case-insensitive, plural-tolerant)
 // /topics/arrays -> matches DB name "Array", /topics/strings -> "String"

@@ -15,7 +15,7 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "12mb" }));
 
 // Health check (Render / Neon debugging)
 app.get("/health", async (req, res) => {

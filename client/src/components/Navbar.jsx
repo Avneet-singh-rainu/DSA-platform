@@ -17,6 +17,11 @@ const LINKS = [
   { to: "/profile", label: "Profile" },
 ];
 
+function isAdminUser(user) {
+  const u = Array.isArray(user) ? user[0] : user;
+  return u?.role === "admin";
+}
+
 function initials(name) {
   return (name || "?")
     .split(/[@\s._-]+/)
@@ -71,6 +76,11 @@ const Navbar = () => {
               {l.label}
             </NavLink>
           ))}
+          {isAdminUser(user) && (
+            <NavLink to="/admin" className={linkClass}>
+              Admin
+            </NavLink>
+          )}
         </nav>
 
         {/* Desktop auth */}
@@ -148,6 +158,15 @@ const Navbar = () => {
               {l.label}
             </NavLink>
           ))}
+          {isAdminUser(user) && (
+            <NavLink
+              to="/admin"
+              onClick={() => setOpen(false)}
+              className={linkClass}
+            >
+              Admin
+            </NavLink>
+          )}
           <div className="pt-2 flex gap-2">
             {isLoggedIn ? (
               <button

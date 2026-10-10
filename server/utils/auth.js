@@ -4,9 +4,13 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
 const JWT_EXPIRES = "7d";
 
 function signToken(user) {
-  return jwt.sign({ id: user.id, name: user.name }, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES,
-  });
+  return jwt.sign(
+    { id: user.id, name: user.name, role: user.role || "user" },
+    JWT_SECRET,
+    {
+      expiresIn: JWT_EXPIRES,
+    }
+  );
 }
 
 function authMiddleware(req, res, next) {
@@ -22,4 +26,11 @@ function authMiddleware(req, res, next) {
   }
 }
 
-module.exports = { signToken, authMiddleware, JWT_SECRET };
+function adminMiddleware(req, res, next) {
+  if (!req.auth || req.auth.role !== "admin") {
+    return res.status(403).json({ message: "Admin only" });
+  }
+  next();
+}
+
+module.exports = { signToken, authMiddleware, adminMiddleware, JWT_SECRET };
