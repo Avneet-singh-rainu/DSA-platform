@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { updateBookmarks } from "../store/userSlice";
+import { updateBookmarks, logOut } from "../store/userSlice";
 import fetchTopicsbyName from "../utils/fetchTopicsByName";
 import fetchUserByid from "../utils/fetchUserById";
 import api from "../utils/authApi";
@@ -94,6 +94,10 @@ const EachTopic = () => {
       setBookmarks((prev) =>
         wasMarked ? [...prev, id] : prev.filter((x) => x !== id)
       );
+      if (error.response?.status === 401) {
+        dispatch(logOut());
+        navigate("/login");
+      }
     }
   };
 
@@ -120,6 +124,10 @@ const EachTopic = () => {
       setCompleted((prev) =>
         wasDone ? [...prev, id] : prev.filter((x) => x !== id)
       );
+      if (error.response?.status === 401) {
+        dispatch(logOut());
+        navigate("/login");
+      }
     }
   };
 
