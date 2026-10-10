@@ -3,16 +3,44 @@ const router = express.Router();
 const prisma = require("../utils/prisma");
 const { withId } = require("../utils/serialize");
 
-// GET /api/topics -> all topics
+// GET /api/topics -> all topics, optional ?track=DSA filter
 router.get("/", async (req, res) => {
   try {
+    const where = req.query.track
+      ? { track: { equals: String(req.query.track), mode: "insensitive" } }
+      : undefined;
     const topics = await prisma.topic.findMany({
+      where,
       orderBy: { createdAt: "asc" },
     });
     res.json(withId(topics));
   } catch (error) {
     console.error("Error fetching topics:", error);
     res.status(500).json({ message: "Error fetching topics" });
+  }
+});
+
+// GET /api/topics/tracks -> [{ track, topics, problems }]
+router.get("/tracks", async (req, res) => {
+  try {
+    const all = await prisma.topic.findMany({
+      select: { track: true, name: true },
+    });
+    const map = new Map();
+    for (const t of all) {
+      const key = (t.track || "DSA").trim() || "DSA";
+      if (!map.has(key)) map.set(key, { track: key, topics: new Set(), problems: 0 });
+      const entry = map.get(key);
+      entry.topics.add((t.name || "Misc").trim());
+      entry.problems++;
+    }
+    const tracks = [...map.values()]
+      .map((e) => ({ track: e.track, topics: e.topics.size, problems: e.problems }))
+      .sort((a, b) => b.problems - a.problems);
+    res.json(tracks);
+  } catch (error) {
+    console.error("Error fetching tracks:", error);
+    res.status(500).json({ message: "Error fetching tracks" });
   }
 });
 
@@ -64,14 +92,21 @@ router.get("/:name", async (req, res) => {
     const raw = decodeURIComponent(req.params.name).trim();
     const singular = raw.toLowerCase().endsWith("s") ? raw.slice(0, -1) : raw;
 
-    const dataByName = await prisma.topic.findMany({
-      where: {
+    const and = [
+      {
         OR: [
           { name: { equals: raw, mode: "insensitive" } },
           { name: { equals: singular, mode: "insensitive" } },
         ],
       },
-    });
+    ];
+    if (req.query.track) {
+      and.push({
+        track: { equals: String(req.query.track), mode: "insensitive" },
+      });
+    }
+
+    const dataByName = await prisma.topic.findMany({ where: { AND: and } });
     res.status(200).json(withId(dataByName));
   } catch (error) {
     console.log("error in findByName " + error);

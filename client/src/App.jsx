@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Topics from "./pages/Topics";
+import TrackTopics from "./pages/TrackTopics";
 import EachTopic from "./pages/EachTopic";
 import CodeEditor from "./components/CodeEditor";
 import DashBoard from "./components/DashBoard";
@@ -15,14 +16,20 @@ import Login from "./pages/Login";
 
 const App = () => {
   return (
-    <div className="bg-gray-900 text-gray-200 min-h-screen min-w-full relative">
+    <div className="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 min-h-screen min-w-full relative">
       <Navbar />
       <div className="container min-w-full p-4">
         <Suspense fallback={<div>...loading your content</div>}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/topics" element={<Topics />} />
-            <Route path="/topics/:topicname" element={<EachTopic />} />
+            <Route path="/topics/:track" element={<TrackTopics />} />
+            <Route path="/topics/:track/:topic" element={<EachTopic />} />
+            <Route
+              path="/topics/:track/:topic/:question"
+              element={<CodeEditor />}
+            />
+            {/* legacy deep links */}
             <Route
               path="/topics/:topicname/:question"
               element={<CodeEditor />}

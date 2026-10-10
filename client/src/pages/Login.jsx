@@ -29,10 +29,14 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-gray-900 text-gray-200">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-sm">
-        <h2 className="text-3xl font-bold mb-6 text-teal-400">Login</h2>
-        {isError && <p className="text-red-400 mb-4">{errorMessage}</p>}
+    <div className="w-full min-h-screen flex items-center justify-center bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 rounded-lg shadow-lg w-full max-w-sm">
+        <h2 className="text-3xl font-bold mb-6 text-emerald-700 dark:text-emerald-400">
+          Login
+        </h2>
+        {isError && (
+          <p className="text-rose-600 dark:text-rose-400 mb-4">{errorMessage}</p>
+        )}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-semibold mb-2">Email</label>
@@ -40,7 +44,7 @@ const Login = () => {
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-black"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200"
               required
             />
           </div>
@@ -50,7 +54,7 @@ const Login = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-black"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200"
               required
               minLength={6}
             />
@@ -58,14 +62,17 @@ const Login = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-teal-500 hover:bg-teal-400 disabled:opacity-50 text-white font-bold py-2 px-4 rounded-full"
+            className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white font-bold py-2 px-4 rounded-full"
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
-        <p className="mt-4 text-center text-gray-400">
+        <p className="mt-4 text-center text-slate-500 dark:text-slate-400">
           Don&apos;t have an account?{" "}
-          <Link to="/signup" className="text-teal-400 hover:underline">
+          <Link
+            to="/signup"
+            className="text-emerald-700 dark:text-emerald-400 hover:underline"
+          >
             Sign Up
           </Link>
         </p>

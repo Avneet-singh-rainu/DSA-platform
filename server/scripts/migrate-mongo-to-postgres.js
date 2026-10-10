@@ -43,6 +43,8 @@ async function main() {
       update: {},
       create: {
         id,
+        track: t.track ?? "DSA",
+        kind: t.kind ?? "problem",
         name: t.name ?? null,
         title: t.title ?? null,
         desc: t.desc ?? null,
@@ -55,6 +57,7 @@ async function main() {
           ? t.exampleImages.map(String)
           : [],
         examples: t.examples ?? undefined,
+        content: t.content ?? null,
         testcasecode: t.testcasecode ?? null,
         mainmethode: t.mainmethode ?? null,
       },

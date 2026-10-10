@@ -48,17 +48,17 @@ const Contact = () => {
     };
 
     return (
-        <div className="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center px-4">
-            <div className="max-w-lg w-full p-8 bg-gray-800 rounded-lg shadow-lg">
-                <h1 className="text-3xl font-bold mb-6 text-center text-white">
+        <div className="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 min-h-screen flex items-center justify-center px-4">
+            <div className="max-w-lg w-full p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg">
+                <h1 className="text-3xl font-bold mb-6 text-center text-slate-900 dark:text-white">
                     Contact Us
                 </h1>
                 {submitted ? (
                     <div className="text-center">
-                        <h2 className="text-xl font-semibold text-green-400">
+                        <h2 className="text-xl font-semibold text-emerald-400">
                             Thank you!
                         </h2>
-                        <p className="text-gray-400">
+                        <p className="text-slate-500 dark:text-slate-400">
                             Your message has been sent successfully.
                         </p>
                     </div>
@@ -66,7 +66,7 @@ const Contact = () => {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label
-                                className="block text-sm font-medium text-gray-400 mb-1"
+                                className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1"
                                 htmlFor="name"
                             >
                                 Name
@@ -78,12 +78,12 @@ const Contact = () => {
                                 value={formData.name}
                                 onChange={handleChange}
                                 required
-                                className="w-full p-3 rounded-lg bg-gray-700 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full p-3 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             />
                         </div>
                         <div>
                             <label
-                                className="block text-sm font-medium text-gray-400 mb-1"
+                                className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1"
                                 htmlFor="email"
                             >
                                 Email
@@ -95,12 +95,12 @@ const Contact = () => {
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
-                                className="w-full p-3 rounded-lg bg-gray-700 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full p-3 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             />
                         </div>
                         <div>
                             <label
-                                className="block text-sm font-medium text-gray-400 mb-1"
+                                className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1"
                                 htmlFor="message"
                             >
                                 Message
@@ -112,24 +112,24 @@ const Contact = () => {
                                 onChange={handleChange}
                                 required
                                 rows="5"
-                                className="w-full p-3 rounded-lg bg-gray-700 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full p-3 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             ></textarea>
                         </div>
                         <button
                             type="submit"
-                            className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+                            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-75"
                         >
                             Send Message
                         </button>
                     </form>
                 )}
-                <div className="mt-8 text-center text-gray-400">
+                <div className="mt-8 text-center text-slate-500 dark:text-slate-400">
                     <p>Or reach us at:</p>
                     <p>
                         Email:{" "}
                         <a
                             href="mailto:avneetsingh.8979@gmail.com"
-                            className="text-blue-400 hover:underline"
+                            className="text-emerald-700 dark:text-emerald-400 hover:underline"
                         >
                             avneetsingh.8979@gmail.com
                         </a>
@@ -138,7 +138,7 @@ const Contact = () => {
                         Phone:{" "}
                         <a
                             href="tel:+918954932320"
-                            className="text-blue-400 hover:underline"
+                            className="text-emerald-700 dark:text-emerald-400 hover:underline"
                         >
                             +91-8954932320
                         </a>

@@ -203,7 +203,9 @@ const topics = [
 async function main() {
   console.log("Seeding topics...");
   await prisma.topic.deleteMany({});
-  const created = await prisma.topic.createMany({ data: topics });
+  const created = await prisma.topic.createMany({
+    data: topics.map((t) => ({ track: "DSA", ...t })),
+  });
   console.log(`Inserted ${created.count} topics`);
 
   const all = await prisma.topic.findMany({ take: 3, orderBy: { createdAt: "asc" } });

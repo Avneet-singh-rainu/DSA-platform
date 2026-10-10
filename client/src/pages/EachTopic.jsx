@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { updateBookmarks, logOut } from "../store/userSlice";
-import fetchTopicsbyName from "../utils/fetchTopicsByName";
+import axios from "axios";
 import fetchUserByid from "../utils/fetchUserById";
 import api from "../utils/authApi";
 import { API_BASE } from "../utils/apiBase";
 import ProblemTable from "../components/ProblemTable";
+import ArticleList from "../components/ArticleList";
 
 function getStoredUser() {
   try {
@@ -22,8 +23,8 @@ function getStoredUser() {
 const EachTopic = () => {
   const [user, setUser] = useState(null);
   const dispatch = useDispatch();
-  const location = useLocation();
-  const topicName = location.pathname.split("/").pop();
+  const { track, topic: topicName } = useParams();
+  const trackSlug = (track || "").toLowerCase();
   const navigate = useNavigate();
   const [fetchData, setFetchData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -33,7 +34,9 @@ const EachTopic = () => {
   const fetchDatas = async () => {
     setLoading(true);
     try {
-      const res = await fetchTopicsbyName(topicName);
+      const res = await axios.get(`${API_BASE}/api/topics/${topicName}`, {
+        params: { track: trackSlug },
+      });
       setFetchData(res?.data || []);
     } catch (error) {
       console.error("Failed to fetch topics:", error);
@@ -66,7 +69,7 @@ const EachTopic = () => {
     };
     f();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topicName]);
+  }, [trackSlug, topicName]);
 
   const toggleBookmark = async (id) => {
     const uid = user?._id || user?.id;
@@ -133,37 +136,58 @@ const EachTopic = () => {
 
   const handleSolve = (topic) => {
     const id = topic._id || topic.id;
-    navigate(`/topics/${topic.name}/${id}`, { state: { data: topic } });
+    navigate(`/topics/${trackSlug}/${topicName}/${id}`, {
+      state: { data: topic },
+    });
   };
 
   const doneCount = completed.length;
+  const allArticles =
+    fetchData.length > 0 &&
+    fetchData.every((t) => (t.kind || "problem") === "article");
 
   return (
-    <div className="w-full min-h-screen bg-gray-900 text-gray-200">
+    <div className="w-full min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200">
       <div className="w-full px-4 py-4">
-        <Link to="/topics" className="text-teal-400 hover:underline text-sm">
-          ← All topics
+        <Link
+          to={`/topics/${trackSlug}`}
+          className="text-emerald-700 dark:text-emerald-400 hover:underline text-sm"
+        >
+          ← {track || "Track"}
         </Link>
         <div className="flex items-end justify-between mt-1 mb-1">
           <h1 className="text-2xl font-bold capitalize">{topicName}</h1>
           {user && (
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
               {doneCount} solved · {bookmarks.length} saved
             </span>
           )}
         </div>
-        <p className="text-gray-400 text-xs mb-4">
-          {fetchData.length} problem{fetchData.length !== 1 ? "s" : ""} ·
-          click Solve to open the editor
-          {!user && " · log in to track progress"}
+        <p className="text-slate-500 dark:text-slate-400 text-xs mb-4">
+          {allArticles ? (
+            <>
+              {fetchData.length} guide{fetchData.length !== 1 ? "s" : ""} ·
+              click Read to open
+            </>
+          ) : (
+            <>
+              {fetchData.length} problem{fetchData.length !== 1 ? "s" : ""} ·
+              click Solve to open the editor
+              {!user && " · log in to track progress"}
+            </>
+          )}
         </p>
 
         {loading ? (
-          <p className="text-center text-gray-400 py-10">Loading...</p>
+          <p className="text-center text-slate-500 dark:text-slate-400 py-10">
+            Loading...
+          </p>
         ) : fetchData.length === 0 ? (
-          <p className="text-center text-red-400 py-10">
+          <p className="text-center text-rose-600 dark:text-rose-400 py-10">
             No topics found. Please try again later.
           </p>
+        ) : allArticles ? (
+          <ArticleList items={fetchData} onOpen={handleSolve} />
         ) : (
           <ProblemTable
             problems={fetchData}

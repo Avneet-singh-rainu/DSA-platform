@@ -28,15 +28,15 @@ const Profile = () => {
 
   if (!user) {
     return (
-      <div className="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center px-4">
-        <div className="bg-gray-800 p-8 rounded-xl text-center max-w-sm w-full">
+      <div className="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 min-h-screen flex items-center justify-center px-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 rounded-xl text-center max-w-sm w-full">
           <h1 className="text-2xl font-bold mb-2">Profile</h1>
-          <p className="text-gray-400 mb-6">
+          <p className="text-slate-500 dark:text-slate-400 mb-6">
             Log in to see your profile and progress.
           </p>
           <Link
             to="/login"
-            className="bg-teal-600 hover:bg-teal-500 text-white font-semibold py-2 px-6 rounded-lg"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-lg"
           >
             Log in
           </Link>
@@ -53,22 +53,22 @@ const Profile = () => {
     : null;
 
   return (
-    <div className="bg-gray-900 text-gray-200 min-h-screen px-4 py-6">
+    <div className="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 min-h-screen px-4 py-6">
       <div className="w-full space-y-5">
         {/* Identity banner */}
-        <div className="bg-gray-800 rounded-xl p-5 flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-teal-600 flex items-center justify-center text-xl font-bold text-white shrink-0">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex items-center gap-4">
+          <div className="w-14 h-14 rounded-full bg-emerald-600 flex items-center justify-center text-xl font-bold text-white shrink-0">
             {initials(user.name)}
           </div>
           <div className="min-w-0">
             <h1 className="text-lg font-bold truncate">{user.name}</h1>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {memberSince ? `Member since ${memberSince}` : "EatCode member"}
             </p>
           </div>
           <Link
             to="/topics"
-            className="ml-auto shrink-0 bg-teal-600 hover:bg-teal-500 text-white text-sm font-semibold py-2 px-4 rounded-lg"
+            className="ml-auto shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold py-2 px-4 rounded-lg"
           >
             Keep solving
           </Link>

@@ -11,6 +11,15 @@ export const fetchAllTopics = async () => {
   }
 };
 
+export const fetchTracks = async () => {
+  try {
+    const resp = await axios.get(`${API_BASE}/api/topics/tracks`);
+    return resp.data;
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
+};
 export const API_THIS_MONTH_QUESTIONS = async (userId) => {
   try {
     const resp = await axios.get(

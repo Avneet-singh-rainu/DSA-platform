@@ -8,9 +8,12 @@ datasource db {
 
 model Topic {
   id             String   @id @default(cuid())
+  track          String   @default("DSA")
+  kind           String   @default("problem")
   name           String?
   title          String?
   desc           String?
+  content        String? @db.Text
   difficulty     String?
   videoUrl       String?
   link           String?
@@ -23,6 +26,7 @@ model Topic {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  @@index([track])
   @@index([name])
 }
 

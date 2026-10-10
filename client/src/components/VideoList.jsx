@@ -14,7 +14,7 @@ const VideoList = ({ videoUrl }) => {
                     controls={true}
                 />
             ) : (
-                <p className="text-gray-400">No video available</p>
+                <p className="text-slate-500 dark:text-slate-400">No video available</p>
             )}
         </div>
     );
