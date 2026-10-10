@@ -49,7 +49,7 @@ const Contact = () => {
 
     return (
         <div className="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 min-h-screen flex items-center justify-center px-4">
-            <div className="max-w-lg w-full p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg">
+            <div className="max-w-lg w-full p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
                 <h1 className="text-3xl font-bold mb-6 text-center text-slate-900 dark:text-white">
                     Contact Us
                 </h1>
@@ -117,7 +117,7 @@ const Contact = () => {
                         </div>
                         <button
                             type="submit"
-                            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-75"
+                            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-75"
                         >
                             Send Message
                         </button>

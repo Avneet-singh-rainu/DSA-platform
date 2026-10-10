@@ -52,7 +52,7 @@ const ProblemTable = ({
     "px-2 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-sm";
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
       {/* Toolbar */}
       <div className="px-3 py-2.5 flex flex-col md:flex-row gap-2 md:items-center border-b border-slate-200 dark:border-slate-700">
         <input
@@ -88,88 +88,81 @@ const ProblemTable = ({
         </div>
       </div>
 
-      {/* Header */}
-      <div className="hidden md:grid grid-cols-[2.5rem_1fr_6rem_9rem_5rem] gap-2 px-3 py-1.5 text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
-        <span>#</span>
-        <span>Title</span>
-        <span>Difficulty</span>
-        <span>Status</span>
-        <span className="text-right">Action</span>
-      </div>
-
       {/* Rows */}
       {pageItems.length === 0 ? (
         <p className="p-6 text-center text-slate-500 dark:text-slate-400">
           No problems match your filters.
         </p>
       ) : (
-        pageItems.map((t, i) => {
-          const id = t._id || t.id;
-          const isArticle = (t.kind || "problem") === "article";
-          const done = completed.includes(id);
-          const marked = bookmarks.includes(id);
-          const num = (safePage - 1) * PAGE_SIZE + i + 1;
-          return (
-            <div
-              key={id}
-              className="grid grid-cols-1 md:grid-cols-[2.5rem_1fr_6rem_9rem_5rem] gap-1 md:gap-2 px-3 py-2 border-b border-slate-200 dark:border-slate-700 items-center"
-            >
-              <span className="text-slate-400 dark:text-slate-500 text-sm">
-                {num}
-              </span>
-              <div className="min-w-0">
+        <div className="divide-y divide-slate-200 dark:divide-slate-800">
+          {pageItems.map((t, i) => {
+            const id = t._id || t.id;
+            const isArticle = (t.kind || "problem") === "article";
+            const done = completed.includes(id);
+            const marked = bookmarks.includes(id);
+            const num = (safePage - 1) * PAGE_SIZE + i + 1;
+            return (
+              <div
+                key={id}
+                className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-900"
+              >
+                <span
+                  title={done ? "Solved" : "Unsolved"}
+                  className={`w-2 h-2 rounded-full shrink-0 ${
+                    done ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"
+                  }`}
+                />
+                <span className="text-slate-400 dark:text-slate-500 text-sm w-6 shrink-0">
+                  {num}
+                </span>
                 <button
                   onClick={() => onSolve(t)}
-                  className="text-sm font-medium text-left hover:text-emerald-600 dark:hover:text-emerald-300 truncate block w-full"
+                  className="flex-1 min-w-0 text-left"
                 >
-                  {t.title}
+                  <span className="block text-base font-medium truncate hover:text-emerald-700 dark:hover:text-emerald-300">
+                    {t.title}
+                  </span>
+                  <span className="block text-xs text-slate-400 dark:text-slate-500 truncate">
+                    {(t.tags || []).slice(0, 3).join(" · ")}
+                    {(t.tags || []).length > 0 && "  ·  "}
+                    <span className={difficultyColor(t.difficulty)}>
+                      {isArticle ? "Guide" : t.difficulty}
+                    </span>
+                  </span>
                 </button>
-                <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate">
-                  {(t.tags || []).slice(0, 3).join(" · ")}
-                </div>
-              </div>
-              <span
-                className={`${difficultyColor(t.difficulty)} font-medium text-sm`}
-              >
-                {isArticle ? "Guide" : t.difficulty}
-              </span>
-              <div className="flex gap-1.5">
-                {!isArticle && (
-                  <button
-                    onClick={() => onToggleCompletion(id)}
-                    title={done ? "Mark as unsolved" : "Mark as solved"}
-                    className={`text-xs px-2 py-0.5 rounded border ${
-                      done
-                        ? "text-emerald-600 border-emerald-500 dark:text-emerald-400 dark:border-emerald-600"
-                        : "text-slate-500 border-slate-300 hover:text-emerald-600 dark:text-slate-400 dark:border-slate-600 dark:hover:text-emerald-300"
-                    }`}
-                  >
-                    {done ? "Solved" : "Todo"}
-                  </button>
-                )}
+                {!isArticle &&
+                  (done ? (
+                    <button
+                      onClick={() => onToggleCompletion(id)}
+                      title="Mark as unsolved"
+                      className="text-xs text-emerald-600 dark:text-emerald-400 shrink-0 hover:underline whitespace-nowrap"
+                    >
+                      Solved ✓
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => onToggleCompletion(id)}
+                      title="Mark as solved"
+                      className="text-xs text-slate-400 dark:text-slate-500 shrink-0 hover:text-emerald-600 dark:hover:text-emerald-300 whitespace-nowrap"
+                    >
+                      Mark done
+                    </button>
+                  ))}
                 <button
                   onClick={() => onToggleBookmark(id)}
                   title={marked ? "Remove bookmark" : "Bookmark"}
-                  className={`text-xs px-2 py-0.5 rounded border ${
+                  className={`text-base shrink-0 px-1 ${
                     marked
-                      ? "text-amber-600 border-amber-500 dark:text-yellow-400 dark:border-yellow-600"
-                      : "text-slate-500 border-slate-300 hover:text-amber-600 dark:text-slate-400 dark:border-slate-600 dark:hover:text-yellow-300"
+                      ? "text-amber-500"
+                      : "text-slate-300 hover:text-amber-500 dark:text-slate-600 dark:hover:text-amber-400"
                   }`}
                 >
-                  {marked ? "Saved" : "Save"}
+                  {marked ? "★" : "☆"}
                 </button>
               </div>
-              <div className="md:text-right">
-                <button
-                  onClick={() => onSolve(t)}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm py-1 px-3 rounded"
-                >
-                  {isArticle ? "Read" : "Solve"}
-                </button>
-              </div>
-            </div>
-          );
-        })
+            );
+          })}
+        </div>
       )}
 
       {/* Pagination */}
