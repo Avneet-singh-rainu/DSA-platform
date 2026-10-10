@@ -3,10 +3,21 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Dropper from "../components/Dropper";
 import fetchTopicsbyName from "../utils/fetchTopicsByName";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchUser, updateBookmarks } from "../store/userSlice";
+import { updateBookmarks } from "../store/userSlice";
 import fetchUserByid from "../utils/fetchUserById";
-import axios from "axios";
+import api from "../utils/authApi";
 import { API_BASE } from "../utils/apiBase";
+
+function getStoredUser() {
+    try {
+        const raw = sessionStorage.getItem("user");
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed[0] : parsed;
+    } catch {
+        return null;
+    }
+}
 
 const EachTopic = () => {
     //const selector = useSelector((state) => state);
@@ -36,18 +47,25 @@ const EachTopic = () => {
     useEffect(() => {
         fetchDatas();
         const f = async () => {
-            const id = JSON.parse(sessionStorage.getItem("user"))._id;
-            const resp = await fetchUserByid(id);
-
-            setUser(resp);
-            setBookmarks(resp.bookmarks);
-            setCompleted((prev) => {
-                const temp = resp.completed.map((e) => {
-                    return e.questionId;
-                });
-
-                return temp;
-            });
+            const stored = getStoredUser();
+            if (!stored) {
+                setUser(null);
+                setBookmarks([]);
+                setCompleted([]);
+                return;
+            }
+            const uid = stored._id || stored.id;
+            if (!uid) return;
+            try {
+                const resp = await fetchUserByid(uid);
+                if (!resp) return;
+                setUser(resp);
+                setBookmarks(resp.bookmarks || []);
+                const temp = (resp.completed || []).map((e) => e.questionId);
+                setCompleted(temp);
+            } catch (e) {
+                console.error("Failed to fetch user:", e);
+            }
         };
         f();
     }, [topicName]);
@@ -57,6 +75,11 @@ const EachTopic = () => {
     }, [bookmarks, completed]);
 
     const toggleBookmark = async (index) => {
+        const uid = user?._id || user?.id;
+        if (!uid) {
+            navigate("/login");
+            return;
+        }
         const isBookmarked = bookmarks.includes(index);
         const previousBookmarks = [...bookmarks];
         setBookmarks((prev) => {
@@ -68,9 +91,7 @@ const EachTopic = () => {
         });
 
         try {
-            const response = await axios.post(
-                `${API_BASE}/user/${user._id}/${index}`
-            );
+            await api.post(`${API_BASE}/user/${uid}/${index}`);
             let updatedUser = { ...user };
             if (isBookmarked) {
                 updatedUser.bookmarks = updatedUser.bookmarks.filter(
@@ -90,6 +111,11 @@ const EachTopic = () => {
     };
 
     const toggleCompletion = async (index) => {
+        const uid = user?._id || user?.id;
+        if (!uid) {
+            navigate("/login");
+            return;
+        }
         const isCompleted = completed.includes(index);
         const prevCompleted = [...completed];
         console.log(prevCompleted);
@@ -103,11 +129,9 @@ const EachTopic = () => {
 
         //api call to toggle completion
         try {
-            const resp = await axios.put(
-                `${API_BASE}/user/${user._id}/complete/${index}`
-            );
-            const resp2 = await fetchUserByid(user._id);
-            setUser(resp2);
+            await api.put(`${API_BASE}/user/${uid}/complete/${index}`);
+            const resp2 = await fetchUserByid(uid);
+            if (resp2) setUser(resp2);
         } catch (error) {
             console.log(error);
         }

@@ -9,10 +9,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const user = useSelector((state) => state.userSlice);
-    const [isLoggedIn, setIsLoggedIn] = useState(
-        user.isLoggedIn || sessionStorage.getItem("isLoggedIn")
-    );
+    const { isLoggedIn } = useSelector((state) => state.userSlice);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -21,7 +18,6 @@ const Navbar = () => {
     };
 
     const handleLogOut = () => {
-        setIsLoggedIn(false);
         dispatch(logOut());
         navigate("/");
     };
