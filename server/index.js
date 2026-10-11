@@ -4,6 +4,7 @@ const cors = require("cors");
 const prisma = require("./utils/prisma");
 const topicRoutes = require("./routes/topicRoutes");
 const userRoutes = require("./routes/userRoutes");
+const visitRoutes = require("./routes/visitRoutes");
 
 const app = express();
 
@@ -47,6 +48,7 @@ app.get("/health", async (req, res) => {
 // Routes
 app.use("/api/topics", topicRoutes);
 app.use("/user", userRoutes);
+app.use("/api/visits", visitRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "EATCODE API running (Postgres/Neon + Prisma)" });
