@@ -51,3 +51,15 @@ model Completed {
   @@unique([userId, questionId])
   @@index([userId])
 }
+
+model Visit {
+  id        String   @id @default(cuid())
+  path      String
+  day       String
+  ipHash    String
+  userId    String?
+  createdAt DateTime @default(now())
+
+  @@index([day])
+  @@index([path])
+}
