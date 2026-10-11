@@ -218,12 +218,20 @@ const Admin = () => {
     <div className="w-full max-w-5xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Admin · Content</h1>
-        <button
-          onClick={startNew}
-          className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold py-2 px-4 rounded-lg"
-        >
-          + New
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/admin/stats"
+            className="text-emerald-700 dark:text-emerald-400 hover:underline text-sm font-semibold"
+          >
+            Stats →
+          </Link>
+          <button
+            onClick={startNew}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold py-2 px-4 rounded-lg"
+          >
+            + New
+          </button>
+        </div>
       </div>
       {error && (
         <p className="text-sm text-rose-600 dark:text-rose-400 mb-4">{error}</p>
