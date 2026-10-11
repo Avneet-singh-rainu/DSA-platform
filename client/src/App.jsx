@@ -13,8 +13,10 @@ import Profile from "./pages/Profile";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
+import useVisitBeacon from "./hooks/useVisitBeacon";
 
 const App = () => {
+  useVisitBeacon();
   return (
     <div className="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 min-h-screen min-w-full relative">
       <Navbar />
